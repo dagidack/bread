@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Хлеб и пицца — рецепты и таймеры</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+        .tabular-nums {
+            font-variant-numeric: tabular-nums;
+        }
+    </style>
+</head>
+<body class="bg-stone-100 text-stone-900 font-sans antialiased min-h-screen">
+
+    <!-- Плашка звукового оповещения (вместо alert) -->
+    <div id="alarmBanner" class="hidden fixed top-0 inset-x-0 z-50 bg-amber-600 text-white shadow-lg">
+        <div class="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-2.5">
+                <span class="inline-block w-2.5 h-2.5 rounded-full bg-white animate-ping"></span>
+                <span id="alarmText" class="font-semibold text-sm">Время вышло</span>
+            </div>
+            <button onclick="stopAlarm()" class="px-4 py-1.5 bg-stone-900 hover:bg-stone-800 text-white text-sm font-medium rounded-lg cursor-pointer shrink-0">
+                Выключить
+            </button>
+        </div>
+    </div>
+
+    <main class="max-w-2xl mx-auto px-4 py-5 sm:py-8 space-y-5">
+
+        <!-- Переключатель рецепта -->
+        <div id="recipeTabs" class="grid grid-cols-2 sm:grid-cols-5 gap-1.5 p-1.5 bg-stone-200/80 rounded-xl"></div>
+
+        <!-- 1. ИНГРЕДИЕНТЫ (пересчёт от любого поля) -->
+        <section class="bg-white border border-stone-300 rounded-2xl p-4 sm:p-6 shadow-sm">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                <div>
+                    <h2 class="text-base font-bold text-stone-900">Ингредиенты</h2>
+                    <p class="text-xs text-stone-500">Мука, вода и соль — база; остальное включается галочкой</p>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <button onclick="scaleMultiplier(1)" class="px-2.5 py-1.5 text-xs font-medium bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg cursor-pointer">
+                        Норма
+                    </button>
+                    <button onclick="scaleMultiplier(2)" class="px-2.5 py-1.5 text-xs font-medium bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg cursor-pointer">
+                        ×2
+                    </button>
+                </div>
+            </div>
+
+            <!-- Сетка полей ингредиентов -->
+            <div id="ingredientsGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-3"></div>
+
+            <!-- Общий вес теста и заметка по рецепту -->
+            <div class="mt-4 pt-3.5 border-t border-stone-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-stone-600">
+                <span id="recipeHint"></span>
+                <span class="font-mono font-semibold text-stone-900 shrink-0">
+                    Вес массы: <span id="totalWeight">422</span> г
+                </span>
+            </div>
+        </section>
+
+        <!-- 2. БРОЖЕНИЕ / ОТДЫХ ТЕСТА (2 ЭТАПА) -->
+        <section class="bg-white border border-stone-300 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4">
+            <div class="flex flex-wrap items-start justify-between gap-2">
+                <div>
+                    <h2 id="fermentSectionTitle" class="text-base font-bold text-stone-900">1. Брожение теста</h2>
+                    <p id="fermentHint" class="text-xs text-stone-500 mt-0.5">Подъём 1.5–2 часа в тепле, затем сформовать батон и дать постоять 30 мин.</p>
+                </div>
+                <!-- Переключатель режима основного подъёма: в тепле / в холодильнике -->
+                <div id="fermentModeSwitch" class="inline-flex p-1 bg-stone-100 border border-stone-200 rounded-lg text-xs">
+                    <button id="ferment-mode-warm" onclick="setFermentMode('warm')" class="px-2.5 py-1 rounded-md font-semibold bg-white text-stone-900 shadow-xs cursor-pointer transition">
+                        В тепле
+                    </button>
+                    <button id="ferment-mode-cold" onclick="setFermentMode('cold')" class="px-2.5 py-1 rounded-md font-medium text-stone-600 hover:text-stone-900 cursor-pointer transition">
+                        Холодильник
+                    </button>
+                </div>
+            </div>
+
+            <!-- Таймер 1.1: Основной подъём / отдых -->
+            <div class="p-3.5 bg-stone-50 border border-stone-200 rounded-xl space-y-2.5">
+                <div class="flex items-center justify-between gap-2">
+                    <span id="fermentMainTitle" class="text-xs font-bold text-stone-800">1.1 Основной подъём в миске</span>
+                    <span id="fermentMainModeBadge" class="text-[11px] font-medium text-stone-500">В тепле</span>
+                </div>
+
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 bg-stone-900 text-white rounded-xl">
+                    <div>
+                        <div id="fermentMainDisplay" class="font-mono text-2xl sm:text-3xl font-bold tracking-wider text-center sm:text-left tabular-nums">
+                            01:30:00
+                        </div>
+                        <div id="fermentMainEndClock" class="text-xs font-mono text-stone-400 text-center sm:text-left mt-0.5"></div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 sm:w-48">
+                        <button id="fermentMainStartBtn" onclick="toggleTimer('fermentMain')" class="h-9 bg-amber-600 hover:bg-amber-500 text-white text-sm font-semibold rounded-lg transition cursor-pointer">
+                            Старт
+                        </button>
+                        <button onclick="resetTimer('fermentMain')" class="h-9 bg-stone-700 hover:bg-stone-600 text-white text-sm font-medium rounded-lg transition cursor-pointer">
+                            Сброс
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-1.5">
+                    <div id="fermentMainPresets" class="flex flex-wrap items-center gap-1.5"></div>
+                    <div class="flex items-center gap-1 ml-auto">
+                        <input type="number" id="fermentMainCustomVal" value="90" min="0.5" step="0.5" onchange="onFermentMainCustomChange(this.value)" class="w-14 h-7 px-1.5 bg-white border border-stone-300 rounded-lg font-mono text-xs text-center">
+                        <span id="fermentMainCustomUnit" class="text-xs text-stone-500">мин</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Таймер 1.2: Расстойка после формовки -->
+            <div class="p-3.5 bg-stone-50 border border-stone-200 rounded-xl space-y-2.5">
+                <div class="flex flex-wrap items-center justify-between gap-1">
+                    <span id="fermentProofTitle" class="text-xs font-bold text-stone-800">1.2 Расстойка после формовки</span>
+                    <span id="fermentProofHint" class="text-[11px] text-stone-500">Сформовать батон и дать постоять</span>
+                </div>
+
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 bg-stone-900 text-white rounded-xl">
+                    <div>
+                        <div id="fermentProofDisplay" class="font-mono text-2xl sm:text-3xl font-bold tracking-wider text-center sm:text-left tabular-nums">
+                            30:00
+                        </div>
+                        <div id="fermentProofEndClock" class="text-xs font-mono text-stone-400 text-center sm:text-left mt-0.5"></div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 sm:w-48">
+                        <button id="fermentProofStartBtn" onclick="toggleTimer('fermentProof')" class="h-9 bg-amber-600 hover:bg-amber-500 text-white text-sm font-semibold rounded-lg transition cursor-pointer">
+                            Старт
+                        </button>
+                        <button onclick="resetTimer('fermentProof')" class="h-9 bg-stone-700 hover:bg-stone-600 text-white text-sm font-medium rounded-lg transition cursor-pointer">
+                            Сброс
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-1.5">
+                    <div id="fermentProofPresets" class="flex flex-wrap items-center gap-1.5"></div>
+                    <div class="flex items-center gap-1 ml-auto">
+                        <input type="number" id="fermentProofCustomVal" value="30" min="1" max="180" onchange="setTimerMinutes('fermentProof', this.value)" class="w-14 h-7 px-1.5 bg-white border border-stone-300 rounded-lg font-mono text-xs text-center">
+                        <span class="text-xs text-stone-500">мин</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. ВЫПЕЧКА / ЖАРКА И ТЕМПЕРАТУРА (2 ЭТАПА) -->
+        <section class="bg-white border border-stone-300 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4">
+            <div>
+                <h2 id="bakeSectionTitle" class="text-base font-bold text-stone-900">2. Выпечка и температура</h2>
+                <p id="bakeInstruction" class="text-xs text-stone-600 mt-0.5"></p>
+            </div>
+
+            <!-- Таймер 2.1: Первый этап выпечки -->
+            <div class="p-3.5 bg-stone-50 border border-stone-200 rounded-xl space-y-2.5">
+                <div class="flex items-center justify-between gap-2">
+                    <span id="bakeStage1Title" class="text-xs font-bold text-stone-800">2.1 С паром (кипяток внизу)</span>
+                    <span id="bakeStage1Temp" class="px-2 py-0.5 bg-amber-100 text-amber-900 font-mono text-xs font-bold rounded-md shrink-0">
+                        250 °C
+                    </span>
+                </div>
+
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 bg-stone-900 text-white rounded-xl">
+                    <div>
+                        <div id="bakeStage1Display" class="font-mono text-2xl sm:text-3xl font-bold tracking-wider text-center sm:text-left tabular-nums">
+                            15:00
+                        </div>
+                        <div id="bakeStage1EndClock" class="text-xs font-mono text-stone-400 text-center sm:text-left mt-0.5"></div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 sm:w-48">
+                        <button id="bakeStage1StartBtn" onclick="toggleTimer('bakeStage1')" class="h-9 bg-amber-600 hover:bg-amber-500 text-white text-sm font-semibold rounded-lg transition cursor-pointer">
+                            Старт
+                        </button>
+                        <button onclick="resetTimer('bakeStage1')" class="h-9 bg-stone-700 hover:bg-stone-600 text-white text-sm font-medium rounded-lg transition cursor-pointer">
+                            Сброс
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-1.5">
+                    <div id="bakeStage1Presets" class="flex flex-wrap items-center gap-1.5"></div>
+                    <div class="flex items-center gap-1 ml-auto">
+                        <input type="number" id="bakeStage1CustomMins" value="15" min="1" max="180" onchange="setTimerMinutes('bakeStage1', this.value)" class="w-14 h-7 px-1.5 bg-white border border-stone-300 rounded-lg font-mono text-xs text-center">
+                        <span class="text-xs text-stone-500">мин</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Таймер 2.2: Второй этап выпечки -->
+            <div class="p-3.5 bg-stone-50 border border-stone-200 rounded-xl space-y-2.5">
+                <div class="flex items-center justify-between gap-2">
+                    <span id="bakeStage2Title" class="text-xs font-bold text-stone-800">2.2 Без пара (убрать воду и допечь)</span>
+                    <span id="bakeStage2Temp" class="px-2 py-0.5 bg-amber-100 text-amber-900 font-mono text-xs font-bold rounded-md shrink-0">
+                        210 °C
+                    </span>
+                </div>
+
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 bg-stone-900 text-white rounded-xl">
+                    <div>
+                        <div id="bakeStage2Display" class="font-mono text-2xl sm:text-3xl font-bold tracking-wider text-center sm:text-left tabular-nums">
+                            18:00
+                        </div>
+                        <div id="bakeStage2EndClock" class="text-xs font-mono text-stone-400 text-center sm:text-left mt-0.5"></div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 sm:w-48">
+                        <button id="bakeStage2StartBtn" onclick="toggleTimer('bakeStage2')" class="h-9 bg-amber-600 hover:bg-amber-500 text-white text-sm font-semibold rounded-lg transition cursor-pointer">
+                            Старт
+                        </button>
+                        <button onclick="resetTimer('bakeStage2')" class="h-9 bg-stone-700 hover:bg-stone-600 text-white text-sm font-medium rounded-lg transition cursor-pointer">
+                            Сброс
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-1.5">
+                    <div id="bakeStage2Presets" class="flex flex-wrap items-center gap-1.5"></div>
+                    <div class="flex items-center gap-1 ml-auto">
+                        <input type="number" id="bakeStage2CustomMins" value="18" min="1" max="180" onchange="setTimerMinutes('bakeStage2', this.value)" class="w-14 h-7 px-1.5 bg-white border border-stone-300 rounded-lg font-mono text-xs text-center">
+                        <span class="text-xs text-stone-500">мин</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        /* ==========================================================================
+           РЕЦЕПТЫ (классические усреднённые пропорции для домашней кухни)
+           ========================================================================== */
+        const RECIPE_ORDER = [
+            'bread', 'pizza', 'lavash', 'buns', 'flatbread',
+            'ciabatta', 'focaccia', 'crepes', 'pancakes', 'cookies'
+        ];
+
+        const RECIPES = {
+            bread: {
+                tabLabel: 'Хлеб',
+                hasColdFerment: true,
+                items: [
+                    { key: 'flour', label: 'Мука', base: 250, step: 10, required: true },
+                    { key: 'water', label: 'Вода тёплая', base: 165, step: 5, required: true },
+                    { key: 'salt', label: 'Соль', base: 5, step: 0.5, required: true },
+                    { key: 'yeast', label: 'Дрожжи', bases: { dry: 2.5, fresh: 7.5 }, steps: { dry: 0.5, fresh: 1 }, required: false, defaultEnabled: true },
+                    { key: 'sugar', label: 'Сахар', base: 5, step: 0.5, required: false, defaultEnabled: false },
+                    { key: 'oil', label: 'Оливковое масло', base: 15, step: 1, required: false, defaultEnabled: false, isOil: true }
+                ],
+                hint: 'Воды чуть больше (165 г на 250 г муки) — мякиш мягче, форму держит.',
+                fermentWarmMins: 90,
+                fermentColdMins: 12 * 60,
+                fermentWarmHint: 'Подъём 1.5–2 часа в тепле, затем сформовать батон и дать постоять 30 мин.',
+                fermentColdHint: 'Убрать в миске под плёнкой в холодильник (+4…+6 °C) на 8–24 ч, затем сформовать и согреть 30–40 мин.',
+                proofTitle: '1.2 Расстойка после формовки',
+                proofWarmHint: 'Сформовать батон и дать постоять',
+                proofColdHint: 'Сформовать и дать согреться перед духовкой',
+                proofDefaultMins: 30,
+                proofPresets: [
+                    { label: '20 мин', mins: 20 },
+                    { label: '30 мин', mins: 30 },
+                    { label: '40 мин', mins: 40 },
+                    { label: '45 мин', mins: 45 }
+                ],
+                bakeInstruction: '15 мин на 250 °C с кипятком внизу, затем убрать воду и допечь 15–18 мин на 210 °C.',
+                bakeStage1: {
+                    title: '2.1 С паром (кипяток внизу)',
+                    temp: '250 °C',
+                    defaultMins: 15,
+                    presets: [
+                        { label: '12 мин', mins: 12 },
+                        { label: '15 мин', mins: 15 },
+                        { label: '18 мин', mins: 18 }
+                    ]
+                },
+                bakeStage2: {
+                    title: '2.2 Без пара (убрать воду и допечь)',
+                    temp: '210 °C',
+                    defaultMins: 18,
+                    presets: [
+                        { label: '15 мин', mins: 15 },
+                        { label: '18 мин', mins: 18 },
+                        { label: '22 мин', mins: 22 }
+                    ]
+                }
+            },
+            pizza: {
+                tabLabel: 'Пицца',
+                hasColdFerment: true,
+                items: [
+                    { key: 'flour', label: 'Мука', base: 450, step: 10, required: true },
+                    { key: 'water', label: 'Вода тёплая', base: 300, step: 5, required: true },
+                    { key: 'salt', label: 'Соль', base: 9, step: 0.5, required: true },
+                    { key: 'yeast', label: 'Дрожжи', bases: { dry: 4, fresh: 12 }, steps: { dry: 0.5, fresh: 1 }, required: false, defaultEnabled: true },
+                    { key: 'sugar', label: 'Сахар', base: 8, step: 0.5, required: false, defaultEnabled: true },
+                    { key: 'oil', label: 'Оливковое масло', base: 55, step: 5, required: false, defaultEnabled: true, isOil: true }
+                ],
+                hint: 'Добавлено ~4 ст. л. оливкового масла (60 мл) и 4 г сухих дрожжей — край хрустит и не пересыхает.',
+                fermentWarmMins: 60,
+                fermentColdMins: 24 * 60,
+                fermentWarmHint: 'Подъём 1–2 часа в тепле, затем разделить на шары и дать отдохнуть 20–30 мин.',
+                fermentColdHint: 'Убрать в закрытой миске в холодильник (+4…+6 °C) на 12–48 ч. Достать за 40 мин до растягивания.',
+                proofTitle: '1.2 Отдых после разделки',
+                proofWarmHint: 'Разделить на 2 шара и дать расслабиться',
+                proofColdHint: 'Достать из холодильника и согреть перед растяжкой',
+                proofDefaultMins: 25,
+                proofPresets: [
+                    { label: '15 мин', mins: 15 },
+                    { label: '25 мин', mins: 25 },
+                    { label: '40 мин', mins: 40 },
+                    { label: '60 мин', mins: 60 }
+                ],
+                bakeInstruction: 'Лучше печь на 220–230 °C около 12 мин (на 200 °C печётся ~15 мин и сильнее сушит край).',
+                bakeStage1: {
+                    title: '2.1 Первая пицца / основной нагрев',
+                    temp: '220 °C',
+                    defaultMins: 12,
+                    presets: [
+                        { label: '10 мин • 230°', mins: 10, temp: '230 °C' },
+                        { label: '12 мин • 220°', mins: 12, temp: '220 °C' },
+                        { label: '15 мин • 200°', mins: 15, temp: '200 °C' }
+                    ]
+                },
+                bakeStage2: {
+                    title: '2.2 Вторая пицца / подрумянить',
+                    temp: '220 °C',
+                    defaultMins: 12,
+                    presets: [
+                        { label: '4 мин подрумянить', mins: 4, temp: '230 °C' },
+                        { label: '12 мин • 220°', mins: 12, temp: '220 °C' },
+                        { label: '15 мин • 200°', mins: 15, temp: '200 °C' }
+                    ]
+                }
+            },
+            lavash: {
+                tabLabel: 'Лаваш',
+                hasColdFerment: false,
+                step1SectionTitle: '1. Отдых бездрожжевого теста',
+                step1MainTitle: '1.1 Отдых под плёнкой',
+                step1Badge: 'Комнатная t°',
+                step2SectionTitle: '2. Жарка на сухой сковороде',
+                items: [
+                    { key: 'flour', label: 'Мука', base: 300, step: 10, required: true },
+                    { key: 'water', label: 'Кипяток (75–85 °C)', base: 160, step: 5, required: true },
+                    { key: 'salt', label: 'Соль', base: 5, step: 0.5, required: true },
+                    { key: 'oil', label: 'Масло (оливк./раст.)', base: 15, step: 1, required: false, defaultEnabled: true, isOil: true }
+                ],
+                hint: 'Заваривается горячей водой — тесто пластичное, тонко раскатывается и не крошится.',
+                fermentWarmMins: 25,
+                fermentWarmHint: 'Замесить гладкое тесто, накрыть плёнкой на 20–30 мин, затем разделить на 6–8 частей.',
+                warmPresets: [
+                    { label: '15 мин', mins: 15 },
+                    { label: '25 мин', mins: 25 },
+                    { label: '40 мин', mins: 40 }
+                ],
+                proofTitle: '1.2 Раскатка (держать под полотенцем)',
+                proofWarmHint: 'Раскатать в 1 мм, чтобы не подсохло',
+                proofDefaultMins: 10,
+                proofPresets: [
+                    { label: '5 мин', mins: 5 },
+                    { label: '10 мин', mins: 10 },
+                    { label: '15 мин', mins: 15 }
+                ],
+                bakeInstruction: 'Сухая хорошо разогретая сковорода без масла: по 30–40 сек с каждой стороны до подпалин, сразу сбрызнуть водой и накрыть полотенцем.',
+                bakeStage1: {
+                    title: '2.1 Первая половина партии (~30–40 сек/сторона)',
+                    temp: 'Сухая сковорода',
+                    defaultMins: 4,
+                    presets: [
+                        { label: '1 мин', mins: 1 },
+                        { label: '3 мин', mins: 3 },
+                        { label: '4 мин', mins: 4 }
+                    ]
+                },
+                bakeStage2: {
+                    title: '2.2 Вторая половина партии (сразу под полотенце)',
+                    temp: 'Сухая сковорода',
+                    defaultMins: 4,
+                    presets: [
+                        { label: '1 мин', mins: 1 },
+                        { label: '3 мин', mins: 3 },
+                        { label: '4 мин', mins: 4 }
+                    ]
+                }
+            },
+            buns: {
+                tabLabel: 'Булочки',
+                hasColdFerment: true,
+                items: [
+                    { key: 'flour', label: 'Мука', base: 350, step: 10, required: true },
+                    { key: 'water', label: 'Вода или молоко', base: 210, step: 5, required: true },
+                    { key: 'salt', label: 'Соль', base: 6, step: 0.5, required: true },
+                    { key: 'yeast', label: 'Дрожжи', bases: { dry: 3.5, fresh: 10 }, steps: { dry: 0.5, fresh: 1 }, required: false, defaultEnabled: true },
+                    { key: 'sugar', label: 'Сахар или мёд', base: 12, step: 1, required: false, defaultEnabled: true },
+                    { key: 'oil', label: 'Масло (слив./оливк.)', base: 25, step: 5, required: false, defaultEnabled: true }
+                ],
+                hint: 'Классические мини-хлебцы к завтраку (~6–8 шт.). Удобно ставить на ночь в холодильник.',
+                fermentWarmMins: 75,
+                fermentColdMins: 12 * 60,
+                fermentWarmHint: 'Подъём 1–1.5 ч в тепле, затем разделить на 6–8 шариков и дать подойти 25–30 мин.',
+                fermentColdHint: 'Убрать в холодильник на 8–14 ч с вечера. Утром сформовать булочки и дать согреться 35 мин.',
+                proofTitle: '1.2 Расстойка шариков на противне',
+                proofWarmHint: 'Округлить булочки и накрыть полотенцем',
+                proofColdHint: 'Сформовать и согреть перед духовкой',
+                proofDefaultMins: 25,
+                proofPresets: [
+                    { label: '20 мин', mins: 20 },
+                    { label: '25 мин', mins: 25 },
+                    { label: '35 мин', mins: 35 }
+                ],
+                bakeInstruction: 'Смазать водой или молоком, сделать надрез. Печь 10 мин на 220 °C с паром, затем 8–10 мин на 200 °C до румяности.',
+                bakeStage1: {
+                    title: '2.1 С паром (подъём корочки)',
+                    temp: '220 °C',
+                    defaultMins: 10,
+                    presets: [
+                        { label: '8 мин', mins: 8 },
+                        { label: '10 мин', mins: 10 },
+                        { label: '12 мин', mins: 12 }
+                    ]
+                },
+                bakeStage2: {
+                    title: '2.2 Без пара до золотистого цвета',
+                    temp: '200 °C',
+                    defaultMins: 9,
+                    presets: [
+                        { label: '7 мин', mins: 7 },
+                        { label: '9 мин', mins: 9 },
+                        { label: '12 мин', mins: 12 }
+                    ]
+                }
+            },
+            flatbread: {
+                tabLabel: 'Лепёшка',
+                hasColdFerment: true,
+                items: [
+                    { key: 'flour', label: 'Мука', base: 300, step: 10, required: true },
+                    { key: 'water', label: 'Вода тёплая', base: 190, step: 5, required: true },
+                    { key: 'salt', label: 'Соль', base: 5, step: 0.5, required: true },
+                    { key: 'yeast', label: 'Дрожжи', bases: { dry: 3, fresh: 9 }, steps: { dry: 0.5, fresh: 1 }, required: false, defaultEnabled: true },
+                    { key: 'sugar', label: 'Сахар', base: 6, step: 0.5, required: false, defaultEnabled: true },
+                    { key: 'oil', label: 'Оливковое масло', base: 20, step: 5, required: false, defaultEnabled: true, isOil: true }
+                ],
+                hint: 'Пышная лепёшка с мягким мякишем: размять руками от центра к краям, середину наколоть вилкой.',
+                fermentWarmMins: 60,
+                fermentColdMins: 12 * 60,
+                fermentWarmHint: 'Подъём 1 час в тепле, затем размять в лепёшку с бортиком и дать постоять 15–20 мин.',
+                fermentColdHint: 'Холодное брожение 8–18 ч в холодильнике, затем сформовать и согреть 25–30 мин.',
+                proofTitle: '1.2 Отдых сформованной лепёшки',
+                proofWarmHint: 'Прижать центр, наколоть вилкой, смазать водой',
+                proofColdHint: 'Дать тесту согреться после холодильника',
+                proofDefaultMins: 20,
+                proofPresets: [
+                    { label: '15 мин', mins: 15 },
+                    { label: '20 мин', mins: 20 },
+                    { label: '30 мин', mins: 30 }
+                ],
+                bakeInstruction: 'Печь на разогретом противне 12 мин при 230 °C до яркой румяной корочки, готовой сразу смазать маслом или сбрызнуть водой.',
+                bakeStage1: {
+                    title: '2.1 Основная выпечка',
+                    temp: '230 °C',
+                    defaultMins: 12,
+                    presets: [
+                        { label: '10 мин', mins: 10 },
+                        { label: '12 мин', mins: 12 },
+                        { label: '15 мин', mins: 15 }
+                    ]
+                },
+                bakeStage2: {
+                    title: '2.2 Подрумянить верх / вторая лепёшка',
+                    temp: '230 °C',
+                    defaultMins: 3,
+                    presets: [
+                        { label: '3 мин верх', mins: 3 },
+                        { label: '12 мин 2-я шт.', mins: 12 }
+                    ]
+                }
+            },
+            ciabatta: {
+                tabLabel: 'Чиабатта',
+                hasColdFerment: true,
+                items: [
+                    { key: 'flour', label: 'Мука (11–12% белка)', base: 300, step: 10, required: true },
+                    { key: 'water', label: 'Вода комнатная', base: 225, step: 5, required: true },
+                    { key: 'salt', label: 'Соль', base: 6, step: 0.5, required: true },
+                    { key: 'yeast', label: 'Дрожжи', bases: { dry: 2, fresh: 6 }, steps: { dry: 0.5, fresh: 1 }, required: false, defaultEnabled: true },
+                    { key: 'oil', label: 'Оливковое масло', base: 15, step: 1, required: false, defaultEnabled: true, isOil: true }
+                ],
+                hint: 'Влажное тесто (75% воды) для крупных дырок — не вымешивать долго, а сложить 2–3 раза мокрыми руками.',
+                fermentWarmMins: 120,
+                fermentColdMins: 18 * 60,
+                fermentWarmHint: 'Брожение 2–2.5 ч (сложить конвертом 2–3 раза каждые 35 мин), затем аккуратно поделить на 2 батона.',
+                fermentColdHint: 'Сложить пару раз в первый час и убрать в холодильник на 12–24 ч. Перевалить на припылённый стол.',
+                proofTitle: '1.2 Расстойка на пергаменте (не обминать)',
+                proofWarmHint: 'Разделить скребком, присыпать мукой, накрыть',
+                proofColdHint: 'Согреть заготовки на пергаменте перед посадкой',
+                proofDefaultMins: 35,
+                proofPresets: [
+                    { label: '25 мин', mins: 25 },
+                    { label: '35 мин', mins: 35 },
+                    { label: '45 мин', mins: 45 }
+                ],
+                bakeInstruction: 'Перенести на пергаменте на горячий противень: 15 мин на 245 °C с кипятком внизу, затем убрать воду и допечь 12–15 мин на 210 °C.',
+                bakeStage1: {
+                    title: '2.1 С паром (раскрытие пор)',
+                    temp: '245 °C',
+                    defaultMins: 15,
+                    presets: [
+                        { label: '12 мин', mins: 12 },
+                        { label: '15 мин', mins: 15 },
+                        { label: '18 мин', mins: 18 }
+                    ]
+                },
+                bakeStage2: {
+                    title: '2.2 Без пара (хрустящая корка)',
+                    temp: '210 °C',
+                    defaultMins: 13,
+                    presets: [
+                        { label: '10 мин', mins: 10 },
+                        { label: '13 мин', mins: 13 },
+                        { label: '16 мин', mins: 16 }
+                    ]
+                }
+            },
+            focaccia: {
+                tabLabel: 'Фокачча',
+                hasColdFerment: true,
+                items: [
+                    { key: 'flour', label: 'Мука', base: 350, step: 10, required: true },
+                    { key: 'water', label: 'Вода тёплая', base: 260, step: 5, required: true },
+                    { key: 'salt', label: 'Соль', base: 7, step: 0.5, required: true },
+                    { key: 'yeast', label: 'Дрожжи', bases: { dry: 3, fresh: 9 }, steps: { dry: 0.5, fresh: 1 }, required: false, defaultEnabled: true },
+                    { key: 'oil', label: 'Оливковое масло', base: 40, step: 5, required: false, defaultEnabled: true, isOil: true }
+                ],
+                hint: 'Классическая без добавок: часть масла в тесто, остальным щедро смазать форму и полить сверху перед ямками.',
+                fermentWarmMins: 90,
+                fermentColdMins: 24 * 60,
+                fermentWarmHint: 'Подъём 1.5–2 ч в миске, затем выложить в смазанную форму, растянуть и сделать ямки пальцами.',
+                fermentColdHint: 'Выбродить в холодильнике 16–36 ч, переложить в смазанную форму, согреть и продавить ямки.',
+                proofTitle: '1.2 Расстойка в форме (перед ямками)',
+                proofWarmHint: 'Растянуть по форме, полить маслом, сделать ямки',
+                proofColdHint: 'Согреть в форме до пузырей и продавить ямки',
+                proofDefaultMins: 35,
+                proofPresets: [
+                    { label: '25 мин', mins: 25 },
+                    { label: '35 мин', mins: 35 },
+                    { label: '45 мин', mins: 45 }
+                ],
+                bakeInstruction: 'Сбрызнуть водой и посыпать крупной солью: печь 15 мин при 230 °C, затем снизить до 210 °C и допечь 8–10 мин до румяности.',
+                bakeStage1: {
+                    title: '2.1 Высокий жар (подъём)',
+                    temp: '230 °C',
+                    defaultMins: 15,
+                    presets: [
+                        { label: '12 мин', mins: 12 },
+                        { label: '15 мин', mins: 15 },
+                        { label: '18 мин', mins: 18 }
+                    ]
+                },
+                bakeStage2: {
+                    title: '2.2 Допечь до золотистой корки',
+                    temp: '210 °C',
+                    defaultMins: 8,
+                    presets: [
+                        { label: '6 мин', mins: 6 },
+                        { label: '8 мин', mins: 8 },
+                        { label: '12 мин', mins: 12 }
+                    ]
+                }
+            },
+            crepes: {
+                tabLabel: 'Блинчики',
+                hasColdFerment: false,
+                step1SectionTitle: '1. Отдых блинного теста',
+                step1MainTitle: '1.1 Набухание клейковины в миске',
+                step1Badge: 'Комнатная t°',
+                step2SectionTitle: '2. Жарка на сковороде',
+                items: [
+                    { key: 'flour', label: 'Мука', base: 200, step: 10, required: true },
+                    { key: 'water', label: 'Молоко', base: 500, step: 25, required: true },
+                    { key: 'salt', label: 'Соль', base: 3, step: 0.5, required: true },
+                    { key: 'eggs', label: 'Яйца', base: 2, step: 0.5, unit: 'шт', weightPerUnit: 55, required: false, defaultEnabled: true },
+                    { key: 'sugar', label: 'Сахар', base: 20, step: 5, required: false, defaultEnabled: true },
+                    { key: 'oil', label: 'Масло в тесто', base: 25, step: 5, required: false, defaultEnabled: true, isOil: true }
+                ],
+                hint: 'Классические тонкие блинчики: сначала размешайте яйца, муку и половину молока без комков, затем влейте остаток.',
+                fermentWarmMins: 20,
+                fermentWarmHint: 'Дать тесту постоять 20–30 мин — клейковина разойдётся, и блинчики не будут рваться.',
+                warmPresets: [
+                    { label: '15 мин', mins: 15 },
+                    { label: '20 мин', mins: 20 },
+                    { label: '30 мин', mins: 30 }
+                ],
+                proofTitle: '1.2 Разогрев блинной сковороды',
+                proofWarmHint: 'Прогреть сковороду и смазать каплей масла',
+                proofDefaultMins: 3,
+                proofPresets: [
+                    { label: '2 мин', mins: 2 },
+                    { label: '3 мин', mins: 3 },
+                    { label: '5 мин', mins: 5 }
+                ],
+                bakeInstruction: 'Средне-сильный огонь: наливать тонким слоем, жарить ~45–60 сек до матового верха и ~25–30 сек с другой стороны.',
+                bakeStage1: {
+                    title: '2.1 Первая половина стопки (~1.5 мин/блин)',
+                    temp: 'Средне-сильный огонь',
+                    defaultMins: 10,
+                    presets: [
+                        { label: '8 мин', mins: 8 },
+                        { label: '10 мин', mins: 10 },
+                        { label: '15 мин', mins: 15 }
+                    ]
+                },
+                bakeStage2: {
+                    title: '2.2 Вторая половина стопки',
+                    temp: 'Средне-сильный огонь',
+                    defaultMins: 8,
+                    presets: [
+                        { label: '6 мин', mins: 6 },
+                        { label: '8 мин', mins: 8 },
+                        { label: '12 мин', mins: 12 }
+                    ]
+                }
+            },
+            pancakes: {
+                tabLabel: 'Панкейки',
+                hasColdFerment: false,
+                step1SectionTitle: '1. Подготовка теста',
+                step1MainTitle: '1.1 Отдых теста в миске',
+                step1Badge: 'Комнатная t°',
+                step2SectionTitle: '2. Жарка на сухой сковороде',
+                items: [
+                    { key: 'flour', label: 'Мука', base: 200, step: 10, required: true },
+                    { key: 'water', label: 'Молоко', base: 220, step: 10, required: true },
+                    { key: 'salt', label: 'Соль', base: 3, step: 0.5, required: true },
+                    { key: 'eggs', label: 'Яйцо', base: 1, step: 0.5, unit: 'шт', weightPerUnit: 55, required: false, defaultEnabled: true },
+                    { key: 'sugar', label: 'Сахар', base: 30, step: 5, required: false, defaultEnabled: true },
+                    { key: 'leaven', label: 'Разрыхлитель', base: 8, step: 1, required: false, defaultEnabled: true },
+                    { key: 'oil', label: 'Масло в тесто', base: 30, step: 5, required: false, defaultEnabled: true }
+                ],
+                hint: 'Не вымешивайте тесто слишком долго — лёгкие комочки разойдутся за 10 мин отдыха, а панкейки останутся пышными.',
+                fermentWarmMins: 10,
+                fermentWarmHint: 'Дать тесту постоять 10–15 мин после замеса, больше не взбивать.',
+                warmPresets: [
+                    { label: '10 мин', mins: 10 },
+                    { label: '15 мин', mins: 15 },
+                    { label: '20 мин', mins: 20 }
+                ],
+                proofTitle: '1.2 Разогрев сухой сковороды',
+                proofWarmHint: 'Средний огонь, сковороду маслом не смазывать',
+                proofDefaultMins: 3,
+                proofPresets: [
+                    { label: '2 мин', mins: 2 },
+                    { label: '3 мин', mins: 3 },
+                    { label: '4 мин', mins: 4 }
+                ],
+                bakeInstruction: 'Жарить на сухой антипригарной сковороде на среднем огне: переворачивать, когда по всей поверхности лопнут пузырьки.',
+                bakeStage1: {
+                    title: '2.1 Первая сторона (до пузырьков, ~2 мин)',
+                    temp: 'Средний огонь',
+                    defaultMins: 2,
+                    presets: [
+                        { label: '1 мин', mins: 1 },
+                        { label: '2 мин', mins: 2 },
+                        { label: '3 мин', mins: 3 }
+                    ]
+                },
+                bakeStage2: {
+                    title: '2.2 Вторая сторона (до румяности, ~1–2 мин)',
+                    temp: 'Средний огонь',
+                    defaultMins: 2,
+                    presets: [
+                        { label: '1 мин', mins: 1 },
+                        { label: '2 мин', mins: 2 }
+                    ]
+                }
+            },
+            cookies: {
+                tabLabel: 'Печенье',
+                hasColdFerment: false,
+                step1SectionTitle: '1. Охлаждение и формовка',
+                step1MainTitle: '1.1 Охлаждение в холодильнике',
+                step1Badge: 'Холодильник (+4 °C)',
+                step2SectionTitle: '2. Выпечка и стабилизация',
+                items: [
+                    { key: 'flour', label: 'Мука', base: 220, step: 10, required: true },
+                    { key: 'butter', label: 'Сливочное масло', base: 115, step: 5, required: true },
+                    { key: 'salt', label: 'Соль', base: 3, step: 0.5, required: true },
+                    { key: 'sugar', label: 'Сахар (белый/тростн.)', base: 130, step: 10, required: false, defaultEnabled: true },
+                    { key: 'eggs', label: 'Яйцо', base: 1, step: 0.5, unit: 'шт', weightPerUnit: 55, required: false, defaultEnabled: true },
+                    { key: 'leaven', label: 'Разрыхлитель', base: 4, step: 0.5, required: false, defaultEnabled: true },
+                    { key: 'choc', label: 'Шоколад кусочками', base: 120, step: 10, required: false, defaultEnabled: true }
+                ],
+                hint: 'Классическое американское печенье: взбить мягкое масло с сахаром, вмешать яйцо, затем муку с разрыхлителем и шоколад.',
+                fermentWarmMins: 40,
+                fermentWarmHint: 'Охладить тесто 30–60 мин в холодильнике, чтобы масло схватилось и печенье не расплылось.',
+                warmPresets: [
+                    { label: '30 мин', mins: 30 },
+                    { label: '40 мин', mins: 40 },
+                    { label: '60 мин', mins: 60 },
+                    { label: '2 ч', mins: 120 }
+                ],
+                proofTitle: '1.2 Скатать шарики по 45–50 г',
+                proofWarmHint: 'Выложить на пергамент с отступом 5–6 см',
+                proofDefaultMins: 10,
+                proofPresets: [
+                    { label: '5 мин', mins: 5 },
+                    { label: '10 мин', mins: 10 },
+                    { label: '15 мин', mins: 15 }
+                ],
+                bakeInstruction: 'Печь при 180 °C 11–12 мин: доставать, когда края подрумянились, а середина ещё мягкая — при остывании станет идеальной.',
+                bakeStage1: {
+                    title: '2.1 Выпечка (достать с мягким центром)',
+                    temp: '180 °C',
+                    defaultMins: 12,
+                    presets: [
+                        { label: '10 мин', mins: 10 },
+                        { label: '12 мин', mins: 12 },
+                        { label: '14 мин', mins: 14 }
+                    ]
+                },
+                bakeStage2: {
+                    title: '2.2 Остывание прямо на горячем противне',
+                    temp: 'На столе',
+                    defaultMins: 10,
+                    presets: [
+                        { label: '8 мин', mins: 8 },
+                        { label: '10 мин', mins: 10 },
+                        { label: '15 мин', mins: 15 }
+                    ]
+                }
+            }
+        };
+
+        const FERMENT_PRESETS = {
+            warm: [
+                { label: '45 мин', mins: 45 },
+                { label: '1 ч', mins: 60 },
+                { label: '1.5 ч', mins: 90 },
+                { label: '2 ч', mins: 120 },
+                { label: '3 ч', mins: 180 },
+                { label: '4 ч', mins: 240 }
+            ],
+            cold: [
+                { label: '8 ч', mins: 8 * 60 },
+                { label: '12 ч', mins: 12 * 60 },
+                { label: '16 ч', mins: 16 * 60 },
+                { label: '24 ч', mins: 24 * 60 },
+                { label: '36 ч', mins: 36 * 60 },
+                { label: '48 ч', mins: 48 * 60 }
+            ]
+        };
+
+        let currentRecipeKey = 'bread';
+        let currentScale = 1;
+        let yeastType = 'dry'; // 'dry' | 'fresh'
+        let optionalEnabled = { yeast: true, sugar: false, oil: false };
+        let fermentMode = 'warm'; // 'warm' | 'cold'
+
+        /* ==========================================================================
+           ОТРИСОВКА И ПЕРЕСЧЁТ ИНГРЕДИЕНТОВ
+           ========================================================================== */
+        function formatNumber(val) {
+            if (val >= 50) return Math.round(val);
+            const rounded = Math.round(val * 10) / 10;
+            return Number.isInteger(rounded) ? rounded : rounded.toFixed(1);
+        }
+
+        function formatOliveOilMeta(grams) {
+            const ml = Math.round(grams / 0.916);
+            const tbspRaw = ml / 15;
+            const tbsp = tbspRaw >= 10 ? Math.round(tbspRaw) : (Math.round(tbspRaw * 2) / 2);
+            return `≈ ${ml} мл • ${tbsp} ст. л.`;
+        }
+
+        function getItemBase(item) {
+            return item.key === 'yeast' ? item.bases[yeastType] : item.base;
+        }
+
+        function getItemStep(item) {
+            return item.key === 'yeast' ? item.steps[yeastType] : item.step;
+        }
+
+        function renderPresetButtons(containerId, presets, timerName, tempBadgeId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            presets.forEach(p => {
+                const btn = document.createElement('button');
+                btn.className = 'px-2.5 py-1 text-xs font-mono bg-white border border-stone-200 hover:bg-stone-100 rounded-lg cursor-pointer';
+                btn.textContent = p.label;
+                btn.onclick = () => {
+                    if (p.temp && tempBadgeId) {
+                        document.getElementById(tempBadgeId).textContent = p.temp;
+                    }
+                    setTimerMinutes(timerName, p.mins);
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        function renderRecipeTabs() {
+            const container = document.getElementById('recipeTabs');
+            container.innerHTML = '';
+            RECIPE_ORDER.forEach(key => {
+                const recipe = RECIPES[key];
+                const isActive = key === currentRecipeKey;
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.onclick = () => switchRecipe(key);
+                btn.textContent = recipe.tabLabel;
+                btn.className = isActive
+                    ? 'py-2 px-2.5 rounded-lg text-xs sm:text-[13px] font-semibold transition cursor-pointer bg-white text-stone-900 shadow-sm text-center'
+                    : 'py-2 px-2.5 rounded-lg text-xs sm:text-[13px] font-medium transition cursor-pointer text-stone-600 hover:text-stone-900 hover:bg-stone-200/60 text-center';
+                container.appendChild(btn);
+            });
+        }
+
+        function switchRecipe(key) {
+            currentRecipeKey = key;
+            currentScale = 1;
+            const recipe = RECIPES[key];
+
+            // Если у рецепта нет холодного брожения, принудительно возвращаем базовый режим
+            if (recipe.hasColdFerment === false) {
+                fermentMode = 'warm';
+            }
+
+            // Состояние чекбоксов по умолчанию для выбранного рецепта
+            optionalEnabled = {};
+            recipe.items.forEach(item => {
+                if (!item.required) {
+                    optionalEnabled[item.key] = Boolean(item.defaultEnabled);
+                }
+            });
+
+            renderRecipeTabs();
+            renderIngredients();
+            document.getElementById('recipeHint').textContent = recipe.hint;
+
+            // Заголовки секций 1 и 2
+            document.getElementById('fermentSectionTitle').textContent = recipe.step1SectionTitle || '1. Брожение теста';
+            document.getElementById('fermentMainTitle').textContent = recipe.step1MainTitle || '1.1 Основной подъём в миске';
+            document.getElementById('bakeSectionTitle').textContent = recipe.step2SectionTitle || '2. Выпечка и температура';
+
+            // Обновление обоих этапов брожения / отдыха
+            updateFermentUI(!timers.fermentMain.running);
+            document.getElementById('fermentProofTitle').textContent = recipe.proofTitle;
+            renderPresetButtons('fermentProofPresets', recipe.proofPresets, 'fermentProof');
+            if (!timers.fermentProof.running) {
+                setTimerMinutes('fermentProof', recipe.proofDefaultMins);
+            }
+
+            // Обновление обоих этапов выпечки / жарки
+            document.getElementById('bakeInstruction').textContent = recipe.bakeInstruction;
+
+            document.getElementById('bakeStage1Title').textContent = recipe.bakeStage1.title;
+            document.getElementById('bakeStage1Temp').textContent = recipe.bakeStage1.temp;
+            renderPresetButtons('bakeStage1Presets', recipe.bakeStage1.presets, 'bakeStage1', 'bakeStage1Temp');
+            if (!timers.bakeStage1.running) {
+                setTimerMinutes('bakeStage1', recipe.bakeStage1.defaultMins);
+            }
+
+            document.getElementById('bakeStage2Title').textContent = recipe.bakeStage2.title;
+            document.getElementById('bakeStage2Temp').textContent = recipe.bakeStage2.temp;
+            renderPresetButtons('bakeStage2Presets', recipe.bakeStage2.presets, 'bakeStage2', 'bakeStage2Temp');
+            if (!timers.bakeStage2.running) {
+                setTimerMinutes('bakeStage2', recipe.bakeStage2.defaultMins);
+            }
+        }
+
+        function renderIngredients() {
+            const recipe = RECIPES[currentRecipeKey];
+            const grid = document.getElementById('ingredientsGrid');
+            grid.innerHTML = '';
+
+            recipe.items.forEach(item => {
+                const isEnabled = item.required || optionalEnabled[item.key];
+                const baseVal = getItemBase(item);
+                const scaledVal = formatNumber(baseVal * currentScale);
+                const stepVal = getItemStep(item);
+                const unitLabel = item.unit || 'г';
+
+                const card = document.createElement('div');
+                card.className = isEnabled
+                    ? 'p-3 bg-stone-50 border border-stone-200 focus-within:border-stone-900 focus-within:bg-white rounded-xl transition flex flex-col justify-between'
+                    : 'p-3 bg-stone-100/70 border border-stone-200/80 rounded-xl transition opacity-65 flex flex-col justify-between';
+
+                // Шапка карточки (для необязательных — с чекбоксом)
+                const headerHtml = item.required
+                    ? `<div class="flex items-center justify-between gap-1 mb-1.5">
+                           <label for="ing-${item.key}" class="text-xs font-semibold text-stone-700">${item.label}</label>
+                       </div>`
+                    : `<label class="flex items-center gap-2 mb-1.5 cursor-pointer select-none">
+                           <input type="checkbox" ${isEnabled ? 'checked' : ''} onchange="toggleOptionalIngredient('${item.key}', this.checked)" class="w-4 h-4 rounded accent-stone-900 cursor-pointer shrink-0">
+                           <span class="text-xs font-semibold ${isEnabled ? 'text-stone-800' : 'text-stone-500'} leading-tight">${item.label}</span>
+                       </label>`;
+
+                // Переключатель сухие / живые дрожжи
+                const yeastToggleHtml = (item.key === 'yeast' && isEnabled)
+                    ? `<div class="inline-flex p-0.5 bg-stone-200/80 rounded-md text-[11px] mb-1.5 self-start">
+                           <button type="button" onclick="setYeastType('dry')" class="px-2 py-0.5 rounded font-medium cursor-pointer transition ${yeastType === 'dry' ? 'bg-white text-stone-900 shadow-2xs' : 'text-stone-600'}">Сухие</button>
+                           <button type="button" onclick="setYeastType('fresh')" class="px-2 py-0.5 rounded font-medium cursor-pointer transition ${yeastType === 'fresh' ? 'bg-white text-stone-900 shadow-2xs' : 'text-stone-600'}">Живые</button>
+                       </div>`
+                    : '';
+
+                // Поле ввода (активно только если ингредиент включён)
+                const inputHtml = isEnabled
+                    ? `<div class="relative">
+                           <input
+                               type="number"
+                               id="ing-${item.key}"
+                               value="${scaledVal}"
+                               min="0"
+                               step="${stepVal}"
+                               oninput="onIngredientInput('${item.key}')"
+                               class="w-full pr-7 bg-transparent font-mono text-xl font-bold text-stone-900 focus:outline-none tabular-nums"
+                           >
+                           <span class="absolute right-0 bottom-0.5 text-xs font-mono text-stone-500">${unitLabel}</span>
+                       </div>
+                       ${item.isOil ? `<div id="oil-meta" class="text-[11px] font-mono text-stone-500 mt-1">${formatOliveOilMeta(baseVal * currentScale)}</div>` : ''}`
+                    : `<div class="text-xs font-mono text-stone-400 pt-1">Не добавлено</div>`;
+
+                card.innerHTML = `${headerHtml}${yeastToggleHtml}${inputHtml}`;
+                grid.appendChild(card);
+            });
+
+            updateTotalWeight();
+        }
+
+        function toggleOptionalIngredient(key, checked) {
+            optionalEnabled[key] = checked;
+            renderIngredients();
+        }
+
+        function setYeastType(type) {
+            if (yeastType === type) return;
+            yeastType = type;
+            renderIngredients();
+        }
+
+        function onIngredientInput(changedKey) {
+            const recipe = RECIPES[currentRecipeKey];
+            const changedItem = recipe.items.find(i => i.key === changedKey);
+            const inputEl = document.getElementById(`ing-${changedKey}`);
+            const rawVal = parseFloat(inputEl.value);
+
+            if (isNaN(rawVal) || rawVal < 0) {
+                updateTotalWeight();
+                return;
+            }
+
+            currentScale = rawVal / getItemBase(changedItem);
+
+            recipe.items.forEach(item => {
+                if (item.key !== changedKey) {
+                    const el = document.getElementById(`ing-${item.key}`);
+                    if (el) {
+                        el.value = formatNumber(getItemBase(item) * currentScale);
+                    }
+                }
+                if (item.isOil) {
+                    const oilMetaEl = document.getElementById('oil-meta');
+                    if (oilMetaEl) {
+                        oilMetaEl.textContent = formatOliveOilMeta(getItemBase(item) * currentScale);
+                    }
+                }
+            });
+
+            updateTotalWeight();
+        }
+
+        function scaleMultiplier(mult) {
+            currentScale = mult;
+            renderIngredients();
+        }
+
+        function updateTotalWeight() {
+            const recipe = RECIPES[currentRecipeKey];
+            let total = 0;
+            recipe.items.forEach(item => {
+                if (!item.required && !optionalEnabled[item.key]) return;
+                const el = document.getElementById(`ing-${item.key}`);
+                const val = el ? (parseFloat(el.value) || 0) : (getItemBase(item) * currentScale);
+                total += val * (item.weightPerUnit || 1);
+            });
+            document.getElementById('totalWeight').textContent = Math.round(total);
+        }
+
+        /* ==========================================================================
+           РЕЖИМ БРОЖЕНИЯ (В ТЕПЛЕ / В ХОЛОДИЛЬНИКЕ) И ТАЙМЕРЫ
+           ========================================================================== */
+        function setFermentMode(mode) {
+            fermentMode = mode;
+            updateFermentUI(true);
+        }
+
+        function updateFermentUI(resetTimeToDefault) {
+            const recipe = RECIPES[currentRecipeKey];
+            const modeSwitch = document.getElementById('fermentModeSwitch');
+            const warmBtn = document.getElementById('ferment-mode-warm');
+            const coldBtn = document.getElementById('ferment-mode-cold');
+
+            if (recipe.hasColdFerment === false) {
+                modeSwitch.classList.add('hidden');
+                document.getElementById('fermentHint').textContent = recipe.fermentWarmHint;
+                document.getElementById('fermentMainModeBadge').textContent = recipe.step1Badge || 'Комнатная t°';
+                document.getElementById('fermentMainCustomUnit').textContent = 'мин';
+                document.getElementById('fermentProofHint').textContent = recipe.proofWarmHint;
+                renderPresetButtons('fermentMainPresets', recipe.warmPresets || FERMENT_PRESETS.warm, 'fermentMain');
+            } else {
+                modeSwitch.classList.remove('hidden');
+                if (fermentMode === 'warm') {
+                    warmBtn.className = 'px-2.5 py-1 rounded-md font-semibold bg-white text-stone-900 shadow-2xs cursor-pointer transition';
+                    coldBtn.className = 'px-2.5 py-1 rounded-md font-medium text-stone-600 hover:text-stone-900 cursor-pointer transition';
+                    document.getElementById('fermentHint').textContent = recipe.fermentWarmHint;
+                    document.getElementById('fermentMainModeBadge').textContent = 'В тепле';
+                    document.getElementById('fermentMainCustomUnit').textContent = 'мин';
+                    document.getElementById('fermentProofHint').textContent = recipe.proofWarmHint;
+                } else {
+                    coldBtn.className = 'px-2.5 py-1 rounded-md font-semibold bg-white text-stone-900 shadow-2xs cursor-pointer transition';
+                    warmBtn.className = 'px-2.5 py-1 rounded-md font-medium text-stone-600 hover:text-stone-900 cursor-pointer transition';
+                    document.getElementById('fermentHint').textContent = recipe.fermentColdHint;
+                    document.getElementById('fermentMainModeBadge').textContent = 'Холодильник (+4…+6 °C)';
+                    document.getElementById('fermentMainCustomUnit').textContent = 'ч';
+                    document.getElementById('fermentProofHint').textContent = recipe.proofColdHint;
+                }
+                renderPresetButtons('fermentMainPresets', FERMENT_PRESETS[fermentMode], 'fermentMain');
+            }
+
+            if (resetTimeToDefault) {
+                const defaultMins = (recipe.hasColdFerment !== false && fermentMode === 'cold')
+                    ? recipe.fermentColdMins
+                    : recipe.fermentWarmMins;
+                setTimerMinutes('fermentMain', defaultMins);
+            }
+        }
+
+        function onFermentMainCustomChange(val) {
+            const num = parseFloat(val);
+            if (isNaN(num) || num <= 0) return;
+            const mins = fermentMode === 'cold' ? Math.round(num * 60) : Math.round(num);
+            setTimerMinutes('fermentMain', mins);
+        }
+
+        /* ==========================================================================
+           ТАЙМЕРЫ (ТОЧНЫЙ ОТСЧЁТ ПО СИСТЕМНОМУ ВРЕМЕНИ + ЗВУКОВОЙ СИГНАЛ)
+           ========================================================================== */
+        const timers = {
+            fermentMain: {
+                defaultSec: 90 * 60,
+                remainingSec: 90 * 60,
+                running: false,
+                endTimestamp: null,
+                showHours: true,
+                label: 'Основной подъём теста завершён'
+            },
+            fermentProof: {
+                defaultSec: 30 * 60,
+                remainingSec: 30 * 60,
+                running: false,
+                endTimestamp: null,
+                showHours: false,
+                label: 'Расстойка завершена — пора в духовку'
+            },
+            bakeStage1: {
+                defaultSec: 15 * 60,
+                remainingSec: 15 * 60,
+                running: false,
+                endTimestamp: null,
+                showHours: false,
+                label: 'Этап 1 выпечки завершён'
+            },
+            bakeStage2: {
+                defaultSec: 18 * 60,
+                remainingSec: 18 * 60,
+                running: false,
+                endTimestamp: null,
+                showHours: false,
+                label: 'Выпечка полностью завершена'
+            }
+        };
+
+        function formatTime(totalSec, showHours) {
+            const s = Math.max(0, Math.ceil(totalSec));
+            const hrs = Math.floor(s / 3600);
+            const mins = Math.floor((s % 3600) / 60);
+            const secs = s % 60;
+            if (showHours || hrs > 0) {
+                return [hrs, mins, secs].map(v => String(v).padStart(2, '0')).join(':');
+            }
+            return [mins, secs].map(v => String(v).padStart(2, '0')).join(':');
+        }
+
+        function formatClock(timestamp) {
+            const target = new Date(timestamp);
+            const now = new Date();
+            const timeStr = `${String(target.getHours()).padStart(2, '0')}:${String(target.getMinutes()).padStart(2, '0')}`;
+
+            const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+            const targetDayStart = new Date(target.getFullYear(), target.getMonth(), target.getDate()).getTime();
+            const diffDays = Math.round((targetDayStart - todayStart) / 86400000);
+
+            if (diffDays === 0) return timeStr;
+            if (diffDays === 1) return `завтра в ${timeStr}`;
+            const day = String(target.getDate()).padStart(2, '0');
+            const month = String(target.getMonth() + 1).padStart(2, '0');
+            return `${day}.${month} в ${timeStr}`;
+        }
+
+        function renderTimer(name) {
+            const t = timers[name];
+            document.getElementById(`${name}Display`).textContent = formatTime(t.remainingSec, t.showHours);
+
+            const btn = document.getElementById(`${name}StartBtn`);
+            const clockEl = document.getElementById(`${name}EndClock`);
+
+            if (t.running && t.endTimestamp) {
+                btn.textContent = 'Пауза';
+                btn.classList.replace('bg-amber-600', 'bg-stone-600');
+                btn.classList.replace('hover:bg-amber-500', 'hover:bg-stone-500');
+                clockEl.textContent = `Готово ${formatClock(t.endTimestamp)}`;
+            } else {
+                btn.textContent = (t.remainingSec < t.defaultSec && t.remainingSec > 0) ? 'Дальше' : 'Старт';
+                btn.classList.replace('bg-stone-600', 'bg-amber-600');
+                btn.classList.replace('hover:bg-stone-500', 'hover:bg-amber-500');
+                clockEl.textContent = t.remainingSec > 0
+                    ? `Будет готово ${formatClock(Date.now() + t.remainingSec * 1000)}`
+                    : 'Завершено';
+            }
+        }
+
+        function setTimerMinutes(name, mins) {
+            const m = Math.max(1, parseInt(mins) || 1);
+            const t = timers[name];
+            t.running = false;
+            t.endTimestamp = null;
+            t.defaultSec = m * 60;
+            t.remainingSec = m * 60;
+
+            if (name === 'fermentMain') {
+                const customInput = document.getElementById('fermentMainCustomVal');
+                customInput.value = fermentMode === 'cold' ? Math.round((m / 60) * 10) / 10 : m;
+            } else if (name === 'fermentProof') {
+                document.getElementById('fermentProofCustomVal').value = m;
+            } else {
+                document.getElementById(`${name}CustomMins`).value = m;
+            }
+            renderTimer(name);
+        }
+
+        function toggleTimer(name) {
+            unlockAudio();
+            const t = timers[name];
+            if (t.running) {
+                t.remainingSec = Math.max(0, (t.endTimestamp - Date.now()) / 1000);
+                t.running = false;
+                t.endTimestamp = null;
+            } else {
+                if (t.remainingSec <= 0) {
+                    t.remainingSec = t.defaultSec;
+                }
+                t.endTimestamp = Date.now() + t.remainingSec * 1000;
+                t.running = true;
+            }
+            renderTimer(name);
+        }
+
+        function resetTimer(name) {
+            const t = timers[name];
+            t.running = false;
+            t.endTimestamp = null;
+            t.remainingSec = t.defaultSec;
+            renderTimer(name);
+        }
+
+        /* ==========================================================================
+           ЗВУКОВОЙ СИГНАЛ (WEB AUDIO API)
+           ========================================================================== */
+        let audioCtx = null;
+        let alarmInterval = null;
+
+        function unlockAudio() {
+            try {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+            } catch (e) {}
+        }
+
+        function playBeep() {
+            try {
+                unlockAudio();
+                const now = audioCtx.currentTime;
+                [880, 1174.66].forEach((freq, i) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, now + i * 0.16);
+                    gain.gain.setValueAtTime(0.001, now + i * 0.16);
+                    gain.gain.exponentialRampToValueAtTime(0.25, now + i * 0.16 + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.16 + 0.4);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now + i * 0.16);
+                    osc.stop(now + i * 0.16 + 0.45);
+                });
+            } catch (e) {}
+        }
+
+        function triggerAlarm(text) {
+            document.getElementById('alarmText').textContent = text;
+            document.getElementById('alarmBanner').classList.remove('hidden');
+            playBeep();
+            if (alarmInterval) clearInterval(alarmInterval);
+            alarmInterval = setInterval(playBeep, 2500);
+        }
+
+        function stopAlarm() {
+            document.getElementById('alarmBanner').classList.add('hidden');
+            if (alarmInterval) {
+                clearInterval(alarmInterval);
+                alarmInterval = null;
+            }
+        }
+
+        setInterval(() => {
+            const now = Date.now();
+            ['fermentMain', 'fermentProof', 'bakeStage1', 'bakeStage2'].forEach(name => {
+                const t = timers[name];
+                if (t.running && t.endTimestamp) {
+                    t.remainingSec = (t.endTimestamp - now) / 1000;
+                    if (t.remainingSec <= 0) {
+                        t.remainingSec = 0;
+                        t.running = false;
+                        t.endTimestamp = null;
+                        triggerAlarm(t.label);
+                    }
+                    renderTimer(name);
+                }
+            });
+        }, 250);
+
+        // Запуск при открытии
+        switchRecipe('bread');
+    </script>
+</body>
+</html>
