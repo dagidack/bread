@@ -266,7 +266,7 @@
                 <div class="min-w-0">
                     <h2 id="pvTitle" class="text-xl sm:text-2xl font-extrabold text-stone-900 leading-tight truncate">Conchiglie</h2>
                     <div id="pvSubtitle" class="text-xs sm:text-sm font-bold text-red-600 uppercase tracking-wider mt-0.5">RUMMO <span class="text-stone-900">No 42</span></div>
-                    <div id="pvMeta" class="text-xs font-mono text-stone-500 mt-1">Варка: 11 мин • Al Dente с 09:30</div>
+                    <div id="pvMeta" class="text-xs font-mono text-stone-500 mt-1">12 мин • Al Dente с 10:30</div>
                 </div>
             </div>
 
@@ -274,12 +274,12 @@
             <div class="flex flex-wrap items-center justify-center gap-3 text-xs font-medium bg-stone-50 border border-stone-200 rounded-xl py-2 px-3">
                 <span class="inline-flex items-center gap-1.5 text-stone-700">
                     <span class="w-2.5 h-2.5 rounded-full bg-orange-500"></span>
-                    <span id="pvLegendOrange">0:00 — 9:30 (варка)</span>
+                    <span id="pvLegendOrange">0:00 — 10:30</span>
                 </span>
                 <span class="text-stone-300">|</span>
                 <span class="inline-flex items-center gap-1.5 text-stone-800 font-semibold">
                     <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                    <span id="pvLegendGreen">9:30 — 11:00 (Al Dente −1:30)</span>
+                    <span id="pvLegendGreen">10:30 — 12:00 (Al Dente −1:30)</span>
                 </span>
             </div>
 
@@ -317,16 +317,25 @@
 
                 <!-- Цифровое табло внутри циферблата -->
                 <div class="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none px-8">
-                    <span id="pvStatusBadge" class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-orange-100 text-orange-800 mb-1">
-                        До Al Dente
-                    </span>
+                    <span id="pvStatusBadge" class="hidden px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 mb-1"></span>
                     <div id="pvMainClock" class="font-mono text-3xl sm:text-4xl font-bold text-stone-900 tabular-nums tracking-tight">
-                        09:30
+                        12:00
                     </div>
                     <div id="pvSubClock" class="font-mono text-[11px] text-stone-500 tabular-nums mt-1">
-                        Всего осталось: 11:00
+                        Al Dente: 10:30
                     </div>
                 </div>
+            </div>
+
+            <!-- Кнопка отключения непрерывного сигнала в зелёной зоне (появляется во время Al Dente) -->
+            <div id="pvAlDenteSoundBar" class="hidden flex items-center justify-between gap-2 px-3.5 py-2 bg-emerald-50 border border-emerald-200 rounded-xl text-xs">
+                <span class="font-semibold text-emerald-900 flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                    <span>Идёт фаза Al Dente — звучит сигнал</span>
+                </span>
+                <button type="button" id="pvMuteAlDenteBtn" onclick="toggleAlDenteMute()" class="px-2.5 py-1 bg-white hover:bg-emerald-100 border border-emerald-300 text-emerald-900 font-semibold rounded-lg cursor-pointer shrink-0">
+                    Заглушить
+                </button>
             </div>
 
             <!-- Управление таймером пасты и корректировка времени -->
@@ -1040,13 +1049,13 @@
         const AL_DENTE_OFFSET_SEC = 90; // 1 минута 30 секунд до окончания варки
 
         const PASTAS = [
-            { id: 'rummo_42', brand: 'RUMMO', num: 'No 42', name: 'Conchiglie Rigate', img: 'img/paste/Conchiglie.jpeg', altImg: 'img/paste/Conchiglie.jpg', mins: 11 },
+            { id: 'rummo_42', brand: 'RUMMO', num: 'No 42', name: 'Conchiglie Rigate', img: 'img/paste/Conchiglie.jpeg', altImg: 'img/paste/Conchiglie.jpg', mins: 12 },
             { id: 'rummo_3', brand: 'RUMMO', num: 'No 3', name: 'Spaghetti', img: 'img/paste/Spaghetti.jpg', altImg: 'img/paste/Spaghetti.jpeg', mins: 9 },
             { id: 'rummo_66', brand: 'RUMMO', num: 'No 66', name: 'Penne Rigate', img: 'img/paste/Penne.jpg', altImg: 'img/paste/Penne.jpeg', mins: 11 },
             { id: 'rummo_48_int', brand: 'RUMMO', num: 'No 48', name: 'Integrale Fusilli', img: 'img/paste/integraleFusilli.jpg', altImg: 'img/paste/integraleFusilli.jpeg', mins: 10 },
             { id: 'rummo_48', brand: 'RUMMO', num: 'No 48', name: 'Fusilli', img: 'img/paste/Fusilli.jpg', altImg: 'img/paste/Fusilli.jpeg', mins: 8 },
-            { id: 'rummo_51', brand: 'RUMMO', num: 'No 51', name: 'Mezzi Rigatoni', img: 'img/paste/rigatoni.jpg', altImg: 'img/paste/rigatoni.jpeg', mins: 13 },
-            { id: 'rummo_85', brand: 'RUMMO', num: 'No 85', name: 'Farfalle', img: 'img/paste/Farfalle.jpg', altImg: 'img/paste/Farfalle.jpeg', mins: 13 },
+            { id: 'rummo_51', brand: 'RUMMO', num: 'No 51', name: 'Mezzi Rigatoni', img: 'img/paste/rigatoni.jpg', altImg: 'img/paste/rigatoni.jpeg', mins: 14 },
+            { id: 'rummo_85', brand: 'RUMMO', num: 'No 85', name: 'Farfalle', img: 'img/paste/Farfalle.jpg', altImg: 'img/paste/Farfalle.jpeg', mins: 12 },
             { id: 'rummo_13', brand: 'RUMMO', num: 'No 13', name: 'Linguine', img: 'img/paste/Linguine.jpg', altImg: 'img/paste/Linguine.jpeg', mins: 10 },
             { id: 'rummo_gnocchi', brand: 'RUMMO', num: 'Gnocchi', name: 'Perunagnocchi', img: 'img/paste/Perunagnocchi.jpg', altImg: 'img/paste/Perunagnocchi.jpeg', mins: 2 },
             { id: 'barilla_16', brand: 'BARILLA', num: 'No 16', name: 'Tagliatelle', img: 'img/paste/Tagliatelle.jpg', altImg: 'img/paste/Tagliatelle.jpeg', mins: 6 },
@@ -1094,7 +1103,7 @@
         const pastaTimers = {};
         let timerToStageIndex = {};
 
-        const STORAGE_KEY = 'breakingBreadState_v2';
+        const STORAGE_KEY = 'breakingBreadState_v3';
 
         function safeStorageGet(key) {
             try {
@@ -1146,7 +1155,8 @@
                     remainingSec: pt.running && pt.endTimestamp ? Math.max(0, (pt.endTimestamp - now) / 1000) : pt.remainingSec,
                     running: pt.running,
                     endTimestamp: pt.endTimestamp,
-                    alDenteNotified: Boolean(pt.alDenteNotified)
+                    alDenteNotified: Boolean(pt.alDenteNotified),
+                    greenMuted: Boolean(pt.greenMuted)
                 };
             }
 
@@ -1227,7 +1237,9 @@
                     remainingSec: p.mins * 60,
                     running: false,
                     endTimestamp: null,
-                    alDenteNotified: false
+                    alDenteNotified: false,
+                    greenMuted: false,
+                    lastGreenBeepAt: 0
                 };
             }
             return pastaTimers[pastaId];
@@ -1829,6 +1841,7 @@
         /* Звуковой сигнал (Web Audio API) */
         let audioCtx = null;
         let alarmInterval = null;
+        let alDenteSoundInterval = null;
 
         function unlockAudio() {
             try {
@@ -1880,66 +1893,38 @@
                 clearInterval(alarmInterval);
                 alarmInterval = null;
             }
+            Object.values(pastaTimers).forEach(pt => {
+                if (pt.running) pt.greenMuted = true;
+            });
+            saveGlobalState();
         }
 
-        /* ==========================================================================
-           7. ЛОГИКА ТАЙМЕРА ПАСТЫ (АНАЛОГОВЫЙ + ЦИФРОВОЙ + AL DENTE -1:30)
-           ========================================================================== */
+        function toggleAlDenteMute() {
+            const pt = ensurePastaTimer(currentPastaId);
+            if (!pt) return;
+            pt.greenMuted = !pt.greenMuted;
+            if (!pt.greenMuted) {
+                unlockAudio();
+                pt.lastGreenBeepAt = Date.now();
+                playBeep();
+            }
+            renderPastaTimer();
+            saveGlobalState();
+        }
+
         function buildPastaTicks() {
             const ticksGroup = document.getElementById('pvTicks');
-            if (!ticksGroup || ticksGroup.childElementCount > 0) return;
-
+            if (!ticksGroup) return;
             let html = '';
             for (let i = 0; i < 60; i++) {
-                const angle = i * 6;
                 const isMajor = i % 5 === 0;
-                const r1 = isMajor ? 89 : 92;
-                const r2 = 96;
-                const stroke = isMajor ? '#a8a29e' : '#d6d3d1';
-                const width = isMajor ? 2 : 1;
-                html += `<line x1="130" y1="${130 - r1}" x2="130" y2="${130 - r2}" stroke="${stroke}" stroke-width="${width}" stroke-linecap="round" transform="rotate(${angle} 130 130)"/>`;
+                const y1 = isMajor ? 18 : 21;
+                const y2 = 28;
+                const stroke = isMajor ? '#78716c' : '#d6d3d1';
+                const width = isMajor ? '2' : '1.2';
+                html += `<line x1="130" y1="${y1}" x2="130" y2="${y2}" stroke="${stroke}" stroke-width="${width}" stroke-linecap="round" transform="rotate(${i * 6} 130 130)"/>`;
             }
             ticksGroup.innerHTML = html;
-        }
-
-        function openPasta(pastaId) {
-            const pasta = PASTAS.find(p => p.id === pastaId);
-            if (!pasta) return;
-
-            if (currentView === 'recipe') {
-                saveCurrentRecipeState();
-            }
-
-            currentPastaId = pastaId;
-            currentView = 'pasta';
-            ensurePastaTimer(pastaId);
-
-            document.getElementById('homeView').classList.add('hidden');
-            document.getElementById('recipeView').classList.add('hidden');
-            document.getElementById('pastaView').classList.remove('hidden');
-
-            const imgEl = document.getElementById('pvImage');
-            imgEl.dataset.fallbackUsed = '';
-            imgEl.onerror = function () {
-                if (!this.dataset.fallbackUsed && pasta.altImg) {
-                    this.dataset.fallbackUsed = '1';
-                    this.src = pasta.altImg;
-                } else {
-                    this.onerror = null;
-                    this.src = `https://placehold.co/200x200/e7e5e4/44403c?text=${encodeURIComponent(pasta.name)}`;
-                }
-            };
-            imgEl.src = pasta.img;
-            imgEl.alt = pasta.name;
-
-            document.getElementById('pvTopBrand').textContent = `${pasta.brand} ${pasta.num}`;
-            document.getElementById('pvTitle').textContent = pasta.name;
-            document.getElementById('pvSubtitle').innerHTML = `${pasta.brand} <span class="text-stone-900">${pasta.num}</span>`;
-
-            mountMiniGamesTo('pastaGameHost');
-            renderPastaTimer();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            saveGlobalState();
         }
 
         function togglePastaTimer() {
@@ -1955,6 +1940,7 @@
                 if (pt.remainingSec <= 0) {
                     pt.remainingSec = pt.defaultSec;
                     pt.alDenteNotified = false;
+                    pt.greenMuted = false;
                 }
                 pt.endTimestamp = Date.now() + pt.remainingSec * 1000;
                 pt.running = true;
@@ -1970,6 +1956,8 @@
             pt.endTimestamp = null;
             pt.remainingSec = pt.defaultSec;
             pt.alDenteNotified = false;
+            pt.greenMuted = false;
+            pt.lastGreenBeepAt = 0;
             renderPastaTimer();
             saveGlobalState();
         }
@@ -1984,6 +1972,8 @@
             pt.defaultSec = nextMins * 60;
             pt.remainingSec = nextMins * 60;
             pt.alDenteNotified = false;
+            pt.greenMuted = false;
+            pt.lastGreenBeepAt = 0;
             renderPastaTimer();
             saveGlobalState();
         }
@@ -2002,8 +1992,8 @@
             // Метаданные и легенда
             const totalMins = Math.round(totalSec / 60);
             document.getElementById('pvMinutesLabel').textContent = `${totalMins} мин`;
-            document.getElementById('pvMeta').textContent = `Варка: ${totalMins} мин • Al Dente с ${formatTime(alDenteAtSec, false)} (за 1:30 до конца)`;
-            document.getElementById('pvLegendOrange').textContent = `0:00 — ${formatTime(alDenteAtSec, false)} (варка)`;
+            document.getElementById('pvMeta').textContent = `${totalMins} мин • Al Dente с ${formatTime(alDenteAtSec, false)} (за 1:30 до конца)`;
+            document.getElementById('pvLegendOrange').textContent = `0:00 — ${formatTime(alDenteAtSec, false)}`;
             document.getElementById('pvLegendGreen').textContent = `${formatTime(alDenteAtSec, false)} — ${formatTime(totalSec, false)} (Al Dente −1:30)`;
 
             // Геометрия окружности r = 106 -> C = 2 * PI * 106 = 666.017
@@ -2044,28 +2034,38 @@
             const handDeg = elapsedRatio * 360;
             document.getElementById('pvHand').setAttribute('transform', `rotate(${handDeg} 130 130)`);
 
-            // Цифровой дисплей и статус
+            // Цифровой дисплей: большое время — всегда общее время с пачки, меньшее — Al Dente
             const statusEl = document.getElementById('pvStatusBadge');
             const mainClockEl = document.getElementById('pvMainClock');
             const subClockEl = document.getElementById('pvSubClock');
             const startBtn = document.getElementById('pvStartBtn');
+            const soundBar = document.getElementById('pvAlDenteSoundBar');
+            const muteBtn = document.getElementById('pvMuteAlDenteBtn');
+            const inGreenZone = remaining > 0 && remaining <= alDenteOffset;
 
             if (remaining <= 0) {
                 statusEl.textContent = 'Готово!';
                 statusEl.className = 'px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-emerald-600 text-white mb-1';
                 mainClockEl.textContent = '00:00';
                 subClockEl.textContent = 'Пора сливать воду';
-            } else if (remaining <= alDenteOffset) {
-                statusEl.textContent = 'AL DENTE • Зелёная зона';
+            } else if (inGreenZone) {
+                statusEl.textContent = 'AL DENTE';
                 statusEl.className = 'px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 mb-1';
                 mainClockEl.textContent = formatTime(remaining, false);
-                subClockEl.textContent = 'До полной готовности';
+                subClockEl.textContent = '';
             } else {
                 const toAlDente = remaining - alDenteOffset;
-                statusEl.textContent = 'До Al Dente';
-                statusEl.className = 'px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-orange-100 text-orange-800 mb-1';
-                mainClockEl.textContent = formatTime(toAlDente, false);
-                subClockEl.textContent = `Всего осталось: ${formatTime(remaining, false)}`;
+                statusEl.textContent = '';
+                statusEl.className = 'hidden';
+                mainClockEl.textContent = formatTime(remaining, false);
+                subClockEl.textContent = `Al Dente: ${formatTime(toAlDente, false)}`;
+            }
+
+            if (pt.running && inGreenZone) {
+                soundBar.classList.remove('hidden');
+                muteBtn.textContent = pt.greenMuted ? 'Включить звук' : 'Заглушить';
+            } else {
+                soundBar.classList.add('hidden');
             }
 
             if (pt.running) {
@@ -2122,18 +2122,25 @@
                     const pasta = PASTAS.find(p => p.id === pastaId);
                     const alDenteOffset = Math.min(AL_DENTE_OFFSET_SEC, Math.floor(pt.defaultSec * 0.5));
 
-                    // Мягкий двойной сигнал при входе в Al Dente (-1:30)
-                    if (!pt.alDenteNotified && pt.remainingSec > 0 && pt.remainingSec <= alDenteOffset) {
-                        pt.alDenteNotified = true;
-                        playBeep();
-                        saveGlobalState();
+                    // Непрерывный периодический сигнал на протяжении всей зелёной зоны (-1:30)
+                    if (pt.remainingSec > 0 && pt.remainingSec <= alDenteOffset) {
+                        if (!pt.alDenteNotified) {
+                            pt.alDenteNotified = true;
+                            document.getElementById('alarmText').textContent = `${pasta ? pasta.name : 'Паста'}: зона Al Dente!`;
+                            document.getElementById('alarmBanner').classList.remove('hidden');
+                            saveGlobalState();
+                        }
+                        if (!pt.greenMuted && now - (pt.lastGreenBeepAt || 0) >= 2000) {
+                            pt.lastGreenBeepAt = now;
+                            playBeep();
+                        }
                     }
 
                     if (pt.remainingSec <= 0) {
                         pt.remainingSec = 0;
                         pt.running = false;
                         pt.endTimestamp = null;
-                        triggerAlarm(`${pasta ? pasta.name : 'Паста'}: варка завершена!`);
+                        triggerAlarm(`${pasta ? pasta.name : 'Паста'}: время вышло!`);
                         saveGlobalState();
                     }
 
@@ -2198,6 +2205,44 @@
             renderIngredients();
             renderWorkflow();
             mountMiniGamesTo('recipeGameHost');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            saveGlobalState();
+        }
+
+        function openPasta(pastaId) {
+            const pasta = PASTAS.find(p => p.id === pastaId);
+            if (!pasta) return;
+            if (currentView === 'recipe') {
+                saveCurrentRecipeState();
+            }
+            currentPastaId = pastaId;
+            currentView = 'pasta';
+            ensurePastaTimer(pastaId);
+
+            document.getElementById('homeView').classList.add('hidden');
+            document.getElementById('recipeView').classList.add('hidden');
+            document.getElementById('pastaView').classList.remove('hidden');
+
+            const imgEl = document.getElementById('pvImage');
+            imgEl.dataset.f = '';
+            imgEl.onerror = function() {
+                if (!this.dataset.f && pasta.altImg) {
+                    this.dataset.f = '1';
+                    this.src = pasta.altImg;
+                } else {
+                    this.onerror = null;
+                    this.src = `https://placehold.co/200x200/f5f5f4/44403c?text=${encodeURIComponent(pasta.name)}`;
+                }
+            };
+            imgEl.src = pasta.img;
+            imgEl.alt = pasta.name;
+
+            document.getElementById('pvTitle').textContent = pasta.name;
+            document.getElementById('pvTopBrand').textContent = `${pasta.brand} ${pasta.num}`;
+            document.getElementById('pvSubtitle').innerHTML = `${pasta.brand} <span class="text-stone-900">${pasta.num}</span>`;
+
+            renderPastaTimer();
+            mountMiniGamesTo('pastaGameHost');
             window.scrollTo({ top: 0, behavior: 'smooth' });
             saveGlobalState();
         }
