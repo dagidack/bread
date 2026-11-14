@@ -248,19 +248,30 @@
 
         <div class="text-center space-y-1">
             <h2 id="pastaViewName" class="text-4xl font-bold text-stone-900 tracking-tight">Conchiglie</h2>
-            <div class="text-base font-bold tracking-widest uppercase"><span id="pastaViewBrand">RUMMO</span> <span id="pastaViewNum" class="text-stone-500">No 42</span></div>
+            <div class="text-base font-bold tracking-widest uppercase"><span id="pastaViewBrand" class="text-red-600">RUMMO</span> <span id="pastaViewNum" class="text-black">NO 42</span></div>
         </div>
 
         <div class="relative w-[280px] h-[280px] mx-auto flex flex-col items-center justify-center">
-            <svg width="280" height="280" viewBox="0 0 280 280" class="absolute inset-0 -rotate-90">
-                <!-- Базовый серый круг -->
-                <circle cx="140" cy="140" r="130" fill="none" stroke="#f5f5f4" stroke-width="12"></circle>
-                <!-- Маркер Al Dente (поворачивается динамически) -->
-                <g id="alDenteMarkerGroup" class="transition-transform duration-300">
-                    <line x1="140" y1="2" x2="140" y2="20" stroke="#ef4444" stroke-width="5" stroke-linecap="round"></line>
+            <svg width="280" height="280" viewBox="0 0 240 240" class="absolute inset-0 -rotate-90">
+                <defs>
+                    <mask id="timer-mask">
+                        <!-- Динамическая маска, открывающаяся по часовой стрелке -->
+                        <circle id="pasta-mask-circle" cx="120" cy="120" r="110" fill="none" stroke="white" stroke-width="16" stroke-dasharray="0 691.15" stroke-dashoffset="0" stroke-linecap="round" class="transition-all duration-200 ease-linear"></circle>
+                    </mask>
+                </defs>
+                <!-- Базовый пустой круг -->
+                <circle cx="120" cy="120" r="110" fill="none" stroke="#eee" stroke-width="12"></circle>
+                
+                <!-- Заполняющиеся секции (оранжевая до Al Dente, зеленая - после) -->
+                <g mask="url(#timer-mask)">
+                    <circle id="pasta-orange-track" cx="120" cy="120" r="110" fill="none" stroke="#FF9800" stroke-width="12" stroke-linecap="round"></circle>
+                    <circle id="pasta-green-track" cx="120" cy="120" r="110" fill="none" stroke="#4CAF50" stroke-width="12" stroke-linecap="round"></circle>
                 </g>
-                <!-- Круг прогресса -->
-                <circle id="pastaProgress" cx="140" cy="140" r="130" fill="none" stroke="#f59e0b" stroke-width="12" stroke-dasharray="816.82" stroke-dashoffset="0" stroke-linecap="round" class="transition-all duration-200 ease-linear"></circle>
+
+                <!-- Маркер порога Al Dente -->
+                <g id="alDenteMarkerGroup" class="transition-transform duration-300">
+                    <line x1="120" y1="2" x2="120" y2="18" stroke="#111" stroke-width="3" stroke-linecap="round"></line>
+                </g>
             </svg>
             <!-- Цифровой дисплей таймера -->
             <div class="relative z-10 flex flex-col items-center justify-center">
@@ -1919,21 +1930,24 @@
             grid.innerHTML = PASTAS.map(p => {
                 const runningEntry = Object.entries(timers).find(([, t]) => t.recipeKey === p.id && t.running && t.isPasta);
                 const timerBadgeHtml = runningEntry
-                    ? `<div class="absolute top-2.5 right-2.5 px-2 py-1 bg-neutral-900/90 backdrop-blur-xs text-amber-400 font-mono text-xs font-bold rounded-lg flex items-center gap-1.5 shadow">
+                    ? `<div class="absolute top-2.5 right-2.5 px-2 py-1 bg-neutral-900/90 backdrop-blur-xs text-amber-400 font-mono text-xs font-bold rounded-lg flex items-center gap-1.5 shadow z-10">
                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
                            <span id="card-timer-pasta_${p.id}">${formatTime(runningEntry[1].remainingSec, false)}</span>
                        </div>`
                     : '';
 
+                // Убираем префиксы No/n. для чистого формата в карточке
+                const cleanNum = p.num.replace(/^n[o.]\s*/i, '');
+
                 return `
-                    <button type="button" onclick="openPasta('${p.id}')" class="group text-center bg-white border border-stone-200 hover:border-stone-400 rounded-3xl p-4 sm:p-5 shadow-sm hover:shadow transition flex flex-col items-center justify-between cursor-pointer relative overflow-hidden">
-                        <div class="relative w-full aspect-square flex items-center justify-center mb-3">
-                            <img src="${p.img}" alt="${p.name}" class="max-w-full max-h-full object-contain group-hover:scale-110 transition duration-300">
+                    <button type="button" onclick="openPasta('${p.id}')" class="group text-left bg-white border border-stone-200 hover:border-neutral-900 rounded-xl overflow-hidden shadow-2xs hover:shadow-md transition flex flex-col cursor-pointer relative">
+                        <div class="relative w-full h-[180px] bg-stone-100 overflow-hidden shrink-0">
+                            <img src="${p.img}" alt="${p.name}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
                             ${timerBadgeHtml}
                         </div>
-                        <div class="w-full">
-                            <div class="text-xl sm:text-2xl font-semibold text-black tracking-tight leading-none mb-1.5">${p.name}</div>
-                            <div class="text-xs sm:text-sm font-bold uppercase tracking-widest"><span style="color: ${p.brandColor}">${p.brand}</span> <span class="text-black">${p.num}</span></div>
+                        <div class="p-3 sm:p-3.5 flex-1 flex flex-col justify-center items-center gap-1 w-full text-center">
+                            <div class="text-sm sm:text-base font-bold text-stone-900 group-hover:text-black tracking-tight leading-none">${p.name}</div>
+                            <div class="text-[11px] font-bold uppercase tracking-widest mt-0.5"><span class="text-red-600">${p.brand}</span> <span class="text-black">NO ${cleanNum}</span></div>
                         </div>
                     </button>
                 `;
@@ -1976,18 +1990,34 @@
             document.getElementById('pastaViewName').textContent = pasta.name;
             const brandEl = document.getElementById('pastaViewBrand');
             brandEl.textContent = pasta.brand;
-            brandEl.style.color = pasta.brandColor;
-            document.getElementById('pastaViewNum').textContent = pasta.num;
+            document.getElementById('pastaViewNum').textContent = 'NO ' + pasta.num.replace(/^n[o.]\s*/i, '');
 
-            // Настройка маркера Al Dente (угол)
+            // Настройка кольца таймера и слоёв Al Dente
+            const circumference = 2 * Math.PI * 110; // ≈ 691.15
+            const orangeTrack = document.getElementById('pasta-orange-track');
+            const greenTrack = document.getElementById('pasta-green-track');
             const markerGroup = document.getElementById('alDenteMarkerGroup');
+
             if (pasta.alDente > 0) {
+                const alDenteRatio = pasta.alDente / pasta.time;
+                // Оранжевая секция от 0 до Al Dente
+                orangeTrack.style.strokeDasharray = `${circumference * alDenteRatio} ${circumference}`;
+                
+                // Зеленая секция начинается сразу после Al Dente (сдвиг через stroke-dashoffset)
+                greenTrack.style.strokeDasharray = `${circumference * (1 - alDenteRatio)} ${circumference}`;
+                greenTrack.style.strokeDashoffset = -circumference * alDenteRatio;
+                
                 markerGroup.style.display = 'block';
-                const angle = (pasta.alDente / pasta.time) * 360;
-                markerGroup.setAttribute('transform', `rotate(${angle}, 140, 140)`);
+                const angle = alDenteRatio * 360;
+                markerGroup.setAttribute('transform', `rotate(${angle}, 120, 120)`);
             } else {
+                orangeTrack.style.strokeDasharray = `${circumference} ${circumference}`;
+                greenTrack.style.strokeDasharray = `0 ${circumference}`;
                 markerGroup.style.display = 'none';
             }
+
+            // Сброс маски (пустая дуга при старте)
+            document.getElementById('pasta-mask-circle').style.strokeDasharray = `0 ${circumference}`;
 
             updatePastaTimerUI(pastaId);
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -2021,11 +2051,12 @@
                 status.classList.add('text-stone-400');
             }
 
-            // Обновление круга SVG (stroke-dashoffset от 0 до 816.82)
-            const circle = document.getElementById('pastaProgress');
-            const circumference = 816.82; 
-            const progress = t.remainingSec / t.defaultSec;
-            circle.style.strokeDashoffset = circumference - (progress * circumference);
+            // Обновление маски круга SVG (заполнение по часовой стрелке)
+            const maskCircle = document.getElementById('pasta-mask-circle');
+            const circumference = 2 * Math.PI * 110;
+            const elapsedSec = t.defaultSec - t.remainingSec;
+            const progress = elapsedSec / t.defaultSec;
+            maskCircle.style.strokeDasharray = `${circumference * progress} ${circumference}`;
         }
 
         function togglePastaTimer() {
