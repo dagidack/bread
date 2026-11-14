@@ -196,6 +196,17 @@
             </div>
         </div>
 
+        <!-- Карточка выбранного рецепта -->
+        <div class="bg-white border border-stone-300 rounded-2xl overflow-hidden shadow-sm">
+            <div class="w-full h-40 sm:h-48 bg-stone-200 overflow-hidden">
+                <img id="rvImage" src="" alt="" class="w-full h-full object-cover">
+            </div>
+            <div class="px-4 py-3 sm:px-6 sm:py-3.5 flex items-center justify-between gap-3">
+                <h1 id="rvTitle" class="text-lg sm:text-xl font-extrabold text-stone-900 leading-tight"></h1>
+                <span id="rvTag" class="text-xs font-mono text-stone-500 shrink-0"></span>
+            </div>
+        </div>
+
         <!-- 1. ИНГРЕДИЕНТЫ (пересчёт от любого поля) -->
         <section class="bg-white border border-stone-300 rounded-2xl p-4 sm:p-6 shadow-sm">
             <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
@@ -2200,13 +2211,29 @@
             document.getElementById('homeView').classList.add('hidden');
             document.getElementById('pastaView').classList.add('hidden');
             document.getElementById('recipeView').classList.remove('hidden');
-            document.getElementById('recipeViewTitle').textContent = RECIPES[recipeKey].tabLabel;
+            updateRecipeHeader(recipeKey);
 
             renderIngredients();
             renderWorkflow();
             mountMiniGamesTo('recipeGameHost');
             window.scrollTo({ top: 0, behavior: 'smooth' });
             saveGlobalState();
+        }
+
+        function updateRecipeHeader(recipeKey) {
+            const recipe = RECIPES[recipeKey];
+            if (!recipe) return;
+            document.getElementById('recipeViewTitle').textContent = recipe.tabLabel;
+            document.getElementById('rvTitle').textContent = recipe.tabLabel;
+            document.getElementById('rvTag').textContent = recipe.cardTag || '';
+
+            const imgEl = document.getElementById('rvImage');
+            imgEl.onerror = function() {
+                this.onerror = null;
+                this.src = `https://placehold.co/600x320/e7e5e4/44403c?text=${encodeURIComponent(recipe.tabLabel)}`;
+            };
+            imgEl.src = recipe.image;
+            imgEl.alt = recipe.tabLabel;
         }
 
         function openPasta(pastaId) {
@@ -2347,9 +2374,8 @@
                                  class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
                             ${timerBadgeHtml}
                         </div>
-                        <div class="p-3 sm:p-3.5 flex-1 flex flex-col justify-between gap-1">
+                        <div class="p-3 sm:p-3.5">
                             <div class="font-bold text-sm sm:text-base text-stone-900 group-hover:text-black">${recipe.tabLabel}</div>
-                            <div class="text-[11px] font-mono text-stone-500">${recipe.cardTag}</div>
                         </div>
                     </button>
                 `;
@@ -3136,7 +3162,7 @@
                 document.getElementById('homeView').classList.add('hidden');
                 document.getElementById('pastaView').classList.add('hidden');
                 document.getElementById('recipeView').classList.remove('hidden');
-                document.getElementById('recipeViewTitle').textContent = RECIPES[currentRecipeKey].tabLabel;
+                updateRecipeHeader(currentRecipeKey);
 
                 loadRecipeState(currentRecipeKey);
                 renderIngredients();
