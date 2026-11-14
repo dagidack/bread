@@ -86,6 +86,9 @@
             <div id="recipeWidget" class="hidden mt-3 pt-3 border-t border-dashed border-stone-200"></div>
         </section>
 
+        <!-- Навигатор текущего этапа (переключение в 1 тап) -->
+        <div id="stageNavigator" class="flex flex-wrap items-center gap-1.5"></div>
+
         <!-- ДИНАМИЧЕСКИЕ ЭТАПЫ ПРИГОТОВЛЕНИЯ (адаптируются под каждый рецепт) -->
         <div id="workflowContainer" class="space-y-5"></div>
 
@@ -104,12 +107,12 @@
             bread: {
                 tabLabel: 'Хлеб',
                 items: [
-                    { key: 'flour', label: 'Мука', base: 250, step: 10, required: true },
-                    { key: 'water', label: 'Вода тёплая', base: 165, step: 5, required: true },
-                    { key: 'salt', label: 'Соль', base: 5, step: 0.5, required: true },
-                    { key: 'yeast', label: 'Дрожжи', bases: { dry: 2.5, fresh: 7.5 }, steps: { dry: 0.5, fresh: 1 }, required: false, defaultEnabled: true },
-                    { key: 'sugar', label: 'Сахар', base: 5, step: 0.5, required: false, defaultEnabled: false },
-                    { key: 'oil', label: 'Оливковое масло', base: 15, step: 1, required: false, defaultEnabled: false, isOil: true }
+                    { key: 'flour', label: 'Мука', base: 250, step: 10, tbspGrams: 10, required: true },
+                    { key: 'water', label: 'Вода тёплая', base: 165, step: 5, tbspGrams: 15, isLiquid: true, required: true },
+                    { key: 'salt', label: 'Соль', base: 5, step: 0.5, tbspGrams: 18, required: true },
+                    { key: 'yeast', label: 'Дрожжи', bases: { dry: 2.5, fresh: 7.5 }, steps: { dry: 0.5, fresh: 1 }, tbspGramsByType: { dry: 9, fresh: 14 }, required: false, defaultEnabled: true },
+                    { key: 'sugar', label: 'Сахар', base: 5, step: 0.5, tbspGrams: 15, required: false, defaultEnabled: false },
+                    { key: 'oil', label: 'Оливковое масло', base: 15, step: 1, tbspGrams: 13.74, required: false, defaultEnabled: false, isOil: true }
                 ],
                 hint: 'Воды чуть больше (165 г на 250 г муки) — мякиш мягче, форму держит.',
                 blocks: [
@@ -121,7 +124,9 @@
                         warmHint: 'Подъём 1.5–2 часа в тепле, затем сформовать батон и дать постоять 30 мин.',
                         coldHint: 'Убрать в миске под плёнкой в холодильник (+4…+6 °C) на 8–24 ч, затем сформовать и согреть 30–40 мин.',
                         stage1Title: '1.1 Основной подъём в миске',
+                        stage1Short: '1.1 Подъём',
                         stage2Title: '1.2 Расстойка после формовки',
+                        stage2Short: '1.2 Расстойка',
                         proofWarmHint: 'Сформовать батон и дать постоять',
                         proofColdHint: 'Сформовать и дать согреться перед духовкой',
                         proofMins: 30,
@@ -138,6 +143,7 @@
                         instruction: '15 мин на 250 °C с кипятком внизу, затем убрать воду и допечь 15–18 мин на 210 °C.',
                         stage1: {
                             title: '2.1 С паром (кипяток внизу)',
+                            short: '2.1 С паром',
                             temp: '250 °C',
                             mins: 15,
                             presets: [
@@ -148,6 +154,7 @@
                         },
                         stage2: {
                             title: '2.2 Без пара (убрать воду и допечь)',
+                            short: '2.2 Без пара',
                             temp: '210 °C',
                             mins: 18,
                             presets: [
@@ -164,12 +171,12 @@
                 tabLabel: 'Пицца',
                 widgetType: 'pizzaBalls',
                 items: [
-                    { key: 'flour', label: 'Мука', base: 450, step: 10, required: true },
-                    { key: 'water', label: 'Вода тёплая', base: 300, step: 5, required: true },
-                    { key: 'salt', label: 'Соль', base: 9, step: 0.5, required: true },
-                    { key: 'yeast', label: 'Дрожжи', bases: { dry: 4, fresh: 12 }, steps: { dry: 0.5, fresh: 1 }, required: false, defaultEnabled: true },
-                    { key: 'sugar', label: 'Сахар', base: 8, step: 0.5, required: false, defaultEnabled: true },
-                    { key: 'oil', label: 'Оливковое масло', base: 55, step: 5, required: false, defaultEnabled: true, isOil: true }
+                    { key: 'flour', label: 'Мука', base: 450, step: 10, tbspGrams: 10, required: true },
+                    { key: 'water', label: 'Вода тёплая', base: 300, step: 5, tbspGrams: 15, isLiquid: true, required: true },
+                    { key: 'salt', label: 'Соль', base: 9, step: 0.5, tbspGrams: 18, required: true },
+                    { key: 'yeast', label: 'Дрожжи', bases: { dry: 4, fresh: 12 }, steps: { dry: 0.5, fresh: 1 }, tbspGramsByType: { dry: 9, fresh: 14 }, required: false, defaultEnabled: true },
+                    { key: 'sugar', label: 'Сахар', base: 8, step: 0.5, tbspGrams: 15, required: false, defaultEnabled: true },
+                    { key: 'oil', label: 'Оливковое масло', base: 55, step: 5, tbspGrams: 13.74, required: false, defaultEnabled: true, isOil: true }
                 ],
                 hint: 'Добавлено ~4 ст. л. оливкового масла (60 мл) и 4 г сухих дрожжей — край хрустит и не пересыхает.',
                 blocks: [
@@ -181,7 +188,9 @@
                         warmHint: 'Подъём 1–2 часа в тепле, затем разделить на шары и дать отдохнуть 20–30 мин.',
                         coldHint: 'Убрать в закрытой миске в холодильник (+4…+6 °C) на 12–48 ч. Достать за 40 мин до растягивания.',
                         stage1Title: '1.1 Основной подъём в миске',
+                        stage1Short: '1.1 Подъём',
                         stage2Title: '1.2 Отдых шаров перед растяжкой',
+                        stage2Short: '1.2 Отдых шаров',
                         proofWarmHint: 'Разделить на шары, округлить и накрыть',
                         proofColdHint: 'Достать из холодильника и согреть перед растяжкой',
                         proofMins: 25,
@@ -195,6 +204,7 @@
                     {
                         type: 'singleTimer',
                         title: '2. Выпечка в духовке',
+                        shortTitle: '2. Выпечка',
                         instruction: 'Растянуть тесто руками от центра к краям (не скалкой). Печь на максимально разогретом противне при 220–230 °C около 12 мин.',
                         timerTitle: 'Таймер выпечки',
                         badge: '220 °C',
@@ -214,16 +224,17 @@
                 pieceWeight: 65,
                 pieceName: 'тонких лавашей',
                 items: [
-                    { key: 'flour', label: 'Мука', base: 300, step: 10, required: true },
-                    { key: 'water', label: 'Кипяток (75–85 °C)', base: 160, step: 5, required: true },
-                    { key: 'salt', label: 'Соль', base: 5, step: 0.5, required: true },
-                    { key: 'oil', label: 'Масло (оливк./раст.)', base: 15, step: 1, required: false, defaultEnabled: true, isOil: true }
+                    { key: 'flour', label: 'Мука', base: 300, step: 10, tbspGrams: 10, required: true },
+                    { key: 'water', label: 'Кипяток (75–85 °C)', base: 160, step: 5, tbspGrams: 15, isLiquid: true, required: true },
+                    { key: 'salt', label: 'Соль', base: 5, step: 0.5, tbspGrams: 18, required: true },
+                    { key: 'oil', label: 'Масло (оливк./раст.)', base: 15, step: 1, tbspGrams: 13.74, required: false, defaultEnabled: true, isOil: true }
                 ],
                 hint: 'Заварное тесто на горячей воде — пластичное, раскатывается в 1 мм и не ломается при сворачивании.',
                 blocks: [
                     {
                         type: 'steps',
                         title: '1. Последовательность замеса',
+                        shortTitle: '1. Замес',
                         subtitle: 'Отмечайте шаги по порядку',
                         steps: [
                             'Растворить соль в горячей воде (75–85 °C) и влить туда же масло.',
@@ -234,6 +245,7 @@
                     {
                         type: 'singleTimer',
                         title: '2. Отдых теста под плёнкой',
+                        shortTitle: '2. Отдых теста',
                         instruction: 'Клейковина расслабится за 20–30 мин — после этого шарики легко раскатываются в прозрачный лист.',
                         timerTitle: 'Таймер отдыха',
                         badge: 'Комнатная t°',
@@ -247,6 +259,7 @@
                     {
                         type: 'skillet',
                         title: '3. Жарка на сухой сковороде',
+                        shortTitle: '3. Жарка',
                         heatBadge: 'Сухая сковорода • Сильный огонь',
                         points: [
                             'Разделить тесто на кусочки по ~65 г, держать под плёнкой. Раскатать каждый в круг 1–1.5 мм, стряхнув лишнюю муку.',
@@ -262,12 +275,12 @@
                 tabLabel: 'Булочки',
                 widgetType: 'bunsSplit',
                 items: [
-                    { key: 'flour', label: 'Мука', base: 350, step: 10, required: true },
-                    { key: 'water', label: 'Вода или молоко', base: 210, step: 5, required: true },
-                    { key: 'salt', label: 'Соль', base: 6, step: 0.5, required: true },
-                    { key: 'yeast', label: 'Дрожжи', bases: { dry: 3.5, fresh: 10 }, steps: { dry: 0.5, fresh: 1 }, required: false, defaultEnabled: true },
-                    { key: 'sugar', label: 'Сахар или мёд', base: 12, step: 1, required: false, defaultEnabled: true },
-                    { key: 'oil', label: 'Масло (слив./оливк.)', base: 25, step: 5, required: false, defaultEnabled: true }
+                    { key: 'flour', label: 'Мука', base: 350, step: 10, tbspGrams: 10, required: true },
+                    { key: 'water', label: 'Вода или молоко', base: 210, step: 5, tbspGrams: 15, isLiquid: true, required: true },
+                    { key: 'salt', label: 'Соль', base: 6, step: 0.5, tbspGrams: 18, required: true },
+                    { key: 'yeast', label: 'Дрожжи', bases: { dry: 3.5, fresh: 10 }, steps: { dry: 0.5, fresh: 1 }, tbspGramsByType: { dry: 9, fresh: 14 }, required: false, defaultEnabled: true },
+                    { key: 'sugar', label: 'Сахар или мёд', base: 12, step: 1, tbspGrams: 15, required: false, defaultEnabled: true },
+                    { key: 'oil', label: 'Масло (слив./оливк.)', base: 25, step: 5, tbspGrams: 14, required: false, defaultEnabled: true }
                 ],
                 hint: 'Классические мини-хлебцы к завтраку. Удобно поставить на ночь в холодильник и испечь утром.',
                 blocks: [
@@ -279,7 +292,9 @@
                         warmHint: 'Подъём 1–1.5 ч в тепле, затем разделить на шарики и дать подойти 25–30 мин.',
                         coldHint: 'Убрать в холодильник на 8–14 ч с вечера. Утром сформовать булочки и дать согреться 35 мин.',
                         stage1Title: '1.1 Основной подъём в миске',
+                        stage1Short: '1.1 Подъём',
                         stage2Title: '1.2 Расстойка шариков на противне',
+                        stage2Short: '1.2 Расстойка',
                         proofWarmHint: 'Округлить булочки и накрыть полотенцем',
                         proofColdHint: 'Сформовать и согреть перед духовкой',
                         proofMins: 25,
@@ -295,6 +310,7 @@
                         instruction: 'Смазать верх водой или молоком, сделать неглубокий надрез. Печь 10 мин с паром, затем 8–10 мин без пара.',
                         stage1: {
                             title: '2.1 С паром (подъём корочки)',
+                            short: '2.1 С паром',
                             temp: '220 °C',
                             mins: 10,
                             presets: [
@@ -305,6 +321,7 @@
                         },
                         stage2: {
                             title: '2.2 Без пара до золотистого цвета',
+                            short: '2.2 Без пара',
                             temp: '200 °C',
                             mins: 9,
                             presets: [
@@ -320,12 +337,12 @@
             flatbread: {
                 tabLabel: 'Лепёшка',
                 items: [
-                    { key: 'flour', label: 'Мука', base: 300, step: 10, required: true },
-                    { key: 'water', label: 'Вода тёплая', base: 190, step: 5, required: true },
-                    { key: 'salt', label: 'Соль', base: 5, step: 0.5, required: true },
-                    { key: 'yeast', label: 'Дрожжи', bases: { dry: 3, fresh: 9 }, steps: { dry: 0.5, fresh: 1 }, required: false, defaultEnabled: true },
-                    { key: 'sugar', label: 'Сахар', base: 6, step: 0.5, required: false, defaultEnabled: true },
-                    { key: 'oil', label: 'Оливковое масло', base: 20, step: 5, required: false, defaultEnabled: true, isOil: true }
+                    { key: 'flour', label: 'Мука', base: 300, step: 10, tbspGrams: 10, required: true },
+                    { key: 'water', label: 'Вода тёплая', base: 190, step: 5, tbspGrams: 15, isLiquid: true, required: true },
+                    { key: 'salt', label: 'Соль', base: 5, step: 0.5, tbspGrams: 18, required: true },
+                    { key: 'yeast', label: 'Дрожжи', bases: { dry: 3, fresh: 9 }, steps: { dry: 0.5, fresh: 1 }, tbspGramsByType: { dry: 9, fresh: 14 }, required: false, defaultEnabled: true },
+                    { key: 'sugar', label: 'Сахар', base: 6, step: 0.5, tbspGrams: 15, required: false, defaultEnabled: true },
+                    { key: 'oil', label: 'Оливковое масло', base: 20, step: 5, tbspGrams: 13.74, required: false, defaultEnabled: true, isOil: true }
                 ],
                 hint: 'Пышная лепёшка с мягким мякишем: размять руками от центра к краям, середину часто наколоть вилкой.',
                 blocks: [
@@ -337,7 +354,9 @@
                         warmHint: 'Подъём 1 час в тепле, затем размять в лепёшку с бортиком и дать постоять 15–20 мин.',
                         coldHint: 'Холодное брожение 8–18 ч в холодильнике, затем сформовать и согреть 25–30 мин.',
                         stage1Title: '1.1 Подъём теста в миске',
+                        stage1Short: '1.1 Подъём',
                         stage2Title: '1.2 Отдых сформованной лепёшки',
+                        stage2Short: '1.2 Расстойка',
                         proofWarmHint: 'Прижать центр, наколоть вилкой, смазать водой',
                         proofColdHint: 'Дать тесту согреться после холодильника',
                         proofMins: 20,
@@ -350,6 +369,7 @@
                     {
                         type: 'singleTimer',
                         title: '2. Выпечка в духовке',
+                        shortTitle: '2. Выпечка',
                         instruction: 'Печь на разогретом противне при 230 °C до яркой румяной корочки. Горячую лепёшку сразу смазать маслом или сбрызнуть водой.',
                         timerTitle: 'Таймер выпечки',
                         badge: '230 °C',
@@ -366,11 +386,11 @@
             ciabatta: {
                 tabLabel: 'Чиабатта',
                 items: [
-                    { key: 'flour', label: 'Мука (11–12% белка)', base: 300, step: 10, required: true },
-                    { key: 'water', label: 'Вода комнатная', base: 225, step: 5, required: true },
-                    { key: 'salt', label: 'Соль', base: 6, step: 0.5, required: true },
-                    { key: 'yeast', label: 'Дрожжи', bases: { dry: 2, fresh: 6 }, steps: { dry: 0.5, fresh: 1 }, required: false, defaultEnabled: true },
-                    { key: 'oil', label: 'Оливковое масло', base: 15, step: 1, required: false, defaultEnabled: true, isOil: true }
+                    { key: 'flour', label: 'Мука (11–12% белка)', base: 300, step: 10, tbspGrams: 10, required: true },
+                    { key: 'water', label: 'Вода комнатная', base: 225, step: 5, tbspGrams: 15, isLiquid: true, required: true },
+                    { key: 'salt', label: 'Соль', base: 6, step: 0.5, tbspGrams: 18, required: true },
+                    { key: 'yeast', label: 'Дрожжи', bases: { dry: 2, fresh: 6 }, steps: { dry: 0.5, fresh: 1 }, tbspGramsByType: { dry: 9, fresh: 14 }, required: false, defaultEnabled: true },
+                    { key: 'oil', label: 'Оливковое масло', base: 15, step: 1, tbspGrams: 13.74, required: false, defaultEnabled: true, isOil: true }
                 ],
                 hint: 'Влажное тесто (75% воды) для крупных пор — не месить долго, а складывать мокрыми руками в миске.',
                 blocks: [
@@ -383,7 +403,9 @@
                         warmHint: 'Брожение 2–2.5 ч со складываниями каждые 30 мин, затем аккуратно поделить скребком на 2 батона.',
                         coldHint: 'Сделать 2–3 складывания в первый час и убрать в холодильник на 12–24 ч. Перевалить на припылённый стол.',
                         stage1Title: '1.1 Основное брожение со складываниями',
+                        stage1Short: '1.1 Брожение',
                         stage2Title: '1.2 Расстойка на пергаменте (не обминать)',
+                        stage2Short: '1.2 Расстойка',
                         proofWarmHint: 'Разделить скребком, присыпать мукой, накрыть',
                         proofColdHint: 'Согреть заготовки на пергаменте перед посадкой',
                         proofMins: 35,
@@ -399,6 +421,7 @@
                         instruction: 'Перенести на пергаменте на горячий противень: 15 мин на 245 °C с кипятком внизу, затем убрать воду и допечь при 210 °C.',
                         stage1: {
                             title: '2.1 С паром (раскрытие пор)',
+                            short: '2.1 С паром',
                             temp: '245 °C',
                             mins: 15,
                             presets: [
@@ -409,6 +432,7 @@
                         },
                         stage2: {
                             title: '2.2 Без пара (хрустящая корка)',
+                            short: '2.2 Без пара',
                             temp: '210 °C',
                             mins: 13,
                             presets: [
@@ -425,11 +449,11 @@
                 tabLabel: 'Фокачча',
                 widgetType: 'focacciaOil',
                 items: [
-                    { key: 'flour', label: 'Мука', base: 350, step: 10, required: true },
-                    { key: 'water', label: 'Вода тёплая', base: 260, step: 5, required: true },
-                    { key: 'salt', label: 'Соль', base: 7, step: 0.5, required: true },
-                    { key: 'yeast', label: 'Дрожжи', bases: { dry: 3, fresh: 9 }, steps: { dry: 0.5, fresh: 1 }, required: false, defaultEnabled: true },
-                    { key: 'oil', label: 'Оливковое масло', base: 40, step: 5, required: false, defaultEnabled: true, isOil: true }
+                    { key: 'flour', label: 'Мука', base: 350, step: 10, tbspGrams: 10, required: true },
+                    { key: 'water', label: 'Вода тёплая', base: 260, step: 5, tbspGrams: 15, isLiquid: true, required: true },
+                    { key: 'salt', label: 'Соль', base: 7, step: 0.5, tbspGrams: 18, required: true },
+                    { key: 'yeast', label: 'Дрожжи', bases: { dry: 3, fresh: 9 }, steps: { dry: 0.5, fresh: 1 }, tbspGramsByType: { dry: 9, fresh: 14 }, required: false, defaultEnabled: true },
+                    { key: 'oil', label: 'Оливковое масло', base: 40, step: 5, tbspGrams: 13.74, required: false, defaultEnabled: true, isOil: true }
                 ],
                 hint: 'Классическая без добавок: часть масла идёт в тесто, остальным щедро смазывается форма и поливается верх перед ямками.',
                 blocks: [
@@ -441,7 +465,9 @@
                         warmHint: 'Подъём 1.5–2 ч в миске, затем выложить в смазанную форму, растянуть и сделать ямки пальцами.',
                         coldHint: 'Выбродить в холодильнике 16–36 ч, переложить в смазанную форму, согреть до пузырей и продавить ямки.',
                         stage1Title: '1.1 Основной подъём в миске',
+                        stage1Short: '1.1 Подъём',
                         stage2Title: '1.2 Расстойка в форме (перед ямками)',
+                        stage2Short: '1.2 В форме',
                         proofWarmHint: 'Растянуть по форме, полить маслом, сделать ямки',
                         proofColdHint: 'Согреть в форме до пузырей и продавить ямки',
                         proofMins: 35,
@@ -454,6 +480,7 @@
                     {
                         type: 'singleTimer',
                         title: '2. Выпечка в духовке',
+                        shortTitle: '2. Выпечка',
                         instruction: 'Сбрызнуть верх водой (1–2 ст. л.) и посыпать крупной солью. Печь при 225 °C до яркой золотистой корки.',
                         timerTitle: 'Таймер выпечки',
                         badge: '225 °C',
@@ -473,18 +500,19 @@
                 pieceWeight: 60,
                 pieceName: 'тонких блинчиков (Ø 22 см)',
                 items: [
-                    { key: 'flour', label: 'Мука', base: 200, step: 10, required: true },
-                    { key: 'water', label: 'Молоко', base: 500, step: 25, required: true },
-                    { key: 'salt', label: 'Соль', base: 3, step: 0.5, required: true },
+                    { key: 'flour', label: 'Мука', base: 200, step: 10, tbspGrams: 10, required: true },
+                    { key: 'water', label: 'Молоко', base: 500, step: 25, tbspGrams: 15, isLiquid: true, required: true },
+                    { key: 'salt', label: 'Соль', base: 3, step: 0.5, tbspGrams: 18, required: true },
                     { key: 'eggs', label: 'Яйца', base: 2, step: 0.5, unit: 'шт', weightPerUnit: 55, required: false, defaultEnabled: true },
-                    { key: 'sugar', label: 'Сахар', base: 20, step: 5, required: false, defaultEnabled: true },
-                    { key: 'oil', label: 'Масло в тесто', base: 25, step: 5, required: false, defaultEnabled: true, isOil: true }
+                    { key: 'sugar', label: 'Сахар', base: 20, step: 5, tbspGrams: 15, required: false, defaultEnabled: true },
+                    { key: 'oil', label: 'Масло в тесто', base: 25, step: 5, tbspGrams: 13.74, required: false, defaultEnabled: true, isOil: true }
                 ],
                 hint: 'Чтобы не было комочков, муку вмешивают в густую основу с половиной молока, и только потом разводят остатком.',
                 blocks: [
                     {
                         type: 'steps',
                         title: '1. Последовательность замеса (без комочков)',
+                        shortTitle: '1. Замес',
                         subtitle: 'Отмечайте шаги по порядку',
                         steps: [
                             'Взбить венчиком яйца с солью и сахаром до однородности.',
@@ -495,6 +523,7 @@
                     {
                         type: 'singleTimer',
                         title: '2. Отдых теста',
+                        shortTitle: '2. Отдых теста',
                         instruction: 'За 20 мин клейковина разойдётся — блинчики станут эластичными и не будут рваться при переворачивании.',
                         timerTitle: 'Таймер отдыха',
                         badge: 'Комнатная t°',
@@ -508,6 +537,7 @@
                     {
                         type: 'skillet',
                         title: '3. Жарка на сковороде',
+                        shortTitle: '3. Жарка',
                         heatBadge: 'Средне-сильный огонь',
                         points: [
                             'Хорошо разогреть сковороду и смазать тонкой каплей масла только перед первым блином.',
@@ -524,19 +554,20 @@
                 pieceWeight: 55,
                 pieceName: 'пышных панкейков',
                 items: [
-                    { key: 'flour', label: 'Мука', base: 200, step: 10, required: true },
-                    { key: 'water', label: 'Молоко', base: 220, step: 10, required: true },
-                    { key: 'salt', label: 'Соль', base: 3, step: 0.5, required: true },
+                    { key: 'flour', label: 'Мука', base: 200, step: 10, tbspGrams: 10, required: true },
+                    { key: 'water', label: 'Молоко', base: 220, step: 10, tbspGrams: 15, isLiquid: true, required: true },
+                    { key: 'salt', label: 'Соль', base: 3, step: 0.5, tbspGrams: 18, required: true },
                     { key: 'eggs', label: 'Яйцо', base: 1, step: 0.5, unit: 'шт', weightPerUnit: 55, required: false, defaultEnabled: true },
-                    { key: 'sugar', label: 'Сахар', base: 30, step: 5, required: false, defaultEnabled: true },
-                    { key: 'leaven', label: 'Разрыхлитель', base: 8, step: 1, required: false, defaultEnabled: true },
-                    { key: 'oil', label: 'Масло в тесто', base: 30, step: 5, required: false, defaultEnabled: true }
+                    { key: 'sugar', label: 'Сахар', base: 30, step: 5, tbspGrams: 15, required: false, defaultEnabled: true },
+                    { key: 'leaven', label: 'Разрыхлитель', base: 8, step: 1, tbspGrams: 10, required: false, defaultEnabled: true },
+                    { key: 'oil', label: 'Масло в тесто', base: 30, step: 5, tbspGrams: 14, required: false, defaultEnabled: true }
                 ],
                 hint: 'Главный секрет пышности — соединить сухие и жидкие ингредиенты отдельно и не вымешивать до гладкости.',
                 blocks: [
                     {
                         type: 'steps',
                         title: '1. Последовательность смешивания',
+                        shortTitle: '1. Смешивание',
                         subtitle: 'Важно не перемешать тесто',
                         steps: [
                             'Сухая миска: смешать венчиком муку, разрыхлитель, сахар и соль.',
@@ -547,6 +578,7 @@
                     {
                         type: 'singleTimer',
                         title: '2. Отдых теста',
+                        shortTitle: '2. Отдых теста',
                         instruction: 'Дать тесту постоять 10 мин — разрыхлитель начнёт работать, а комочки сами разойдутся. Больше тесто не перемешивать.',
                         timerTitle: 'Таймер отдыха',
                         badge: 'Комнатная t°',
@@ -559,6 +591,7 @@
                     {
                         type: 'skillet',
                         title: '3. Жарка на сухой сковороде',
+                        shortTitle: '3. Жарка',
                         heatBadge: 'Сухая сковорода • Средний огонь',
                         points: [
                             'Разогреть сухую антипригарную сковороду на среднем огне (масло не добавлять — так корочка будет ровной и бархатистой).',
@@ -575,19 +608,20 @@
                 pieceWeight: 48,
                 pieceName: 'печений по ~48 г',
                 items: [
-                    { key: 'flour', label: 'Мука', base: 220, step: 10, required: true },
-                    { key: 'butter', label: 'Сливочное масло', base: 115, step: 5, required: true },
-                    { key: 'salt', label: 'Соль', base: 3, step: 0.5, required: true },
-                    { key: 'sugar', label: 'Сахар (белый/тростн.)', base: 130, step: 10, required: false, defaultEnabled: true },
+                    { key: 'flour', label: 'Мука', base: 220, step: 10, tbspGrams: 10, required: true },
+                    { key: 'butter', label: 'Сливочное масло', base: 115, step: 5, tbspGrams: 14, required: true },
+                    { key: 'salt', label: 'Соль', base: 3, step: 0.5, tbspGrams: 18, required: true },
+                    { key: 'sugar', label: 'Сахар (белый/тростн.)', base: 130, step: 10, tbspGrams: 15, required: false, defaultEnabled: true },
                     { key: 'eggs', label: 'Яйцо', base: 1, step: 0.5, unit: 'шт', weightPerUnit: 55, required: false, defaultEnabled: true },
-                    { key: 'leaven', label: 'Разрыхлитель', base: 4, step: 0.5, required: false, defaultEnabled: true },
-                    { key: 'choc', label: 'Шоколад кусочками', base: 120, step: 10, required: false, defaultEnabled: true }
+                    { key: 'leaven', label: 'Разрыхлитель', base: 4, step: 0.5, tbspGrams: 10, required: false, defaultEnabled: true },
+                    { key: 'choc', label: 'Шоколад кусочками', base: 120, step: 10, tbspGrams: 12, required: false, defaultEnabled: true }
                 ],
                 hint: 'Классическое американское печенье: хрустящее по краям и мягкое внутри, если не передержать в духовке.',
                 blocks: [
                     {
                         type: 'steps',
                         title: '1. Последовательность замеса',
+                        shortTitle: '1. Замес',
                         subtitle: 'Отмечайте шаги по порядку',
                         steps: [
                             'Мягкое сливочное масло комнатной температуры растереть с сахаром и солью (1–2 мин до кремовой массы).',
@@ -599,6 +633,7 @@
                     {
                         type: 'singleTimer',
                         title: '2. Охлаждение в холодильнике',
+                        shortTitle: '2. Холодильник',
                         instruction: 'Убрать миску с тестом в холодильник на 30–60 мин, чтобы масло схватилось и печенье не расплылось в тонкий блин. Затем скатать шарики по 45–50 г.',
                         timerTitle: 'Таймер охлаждения',
                         badge: 'Холодильник (+4 °C)',
@@ -613,6 +648,7 @@
                     {
                         type: 'singleTimer',
                         title: '3. Выпечка (1 этап)',
+                        shortTitle: '3. Выпечка',
                         instruction: 'Выложить шарики на пергамент с отступом 5–6 см. Доставать через 11–12 мин, когда края подрумянились, а центр ещё мягкий — дать остыть прямо на противне 10 мин.',
                         timerTitle: 'Таймер выпечки',
                         badge: '180 °C',
@@ -655,12 +691,16 @@
         let optionalEnabled = {};
         const fermentModeByRecipe = {};
         const completedSteps = {};
+        const activeStageByRecipe = {};
+        const completedStagesByRecipe = {};
         const ciabattaFolds = [false, false, false];
         let pizzaBallsCount = 2;
         let bunsSplitCount = 8;
 
         // Хранилище всех таймеров по уникальному ID (не сбрасываются при пересчёте муки)
         const timers = {};
+        // Связь ID таймера с индексом этапа текущего рецепта
+        let timerToStageIndex = {};
 
         function ensureTimer(id, config) {
             if (!timers[id]) {
@@ -685,11 +725,40 @@
             return Number.isInteger(rounded) ? rounded : rounded.toFixed(1);
         }
 
-        function formatOliveOilMeta(grams) {
-            const ml = Math.round(grams / 0.916);
-            const tbspRaw = ml / 15;
-            const tbsp = tbspRaw >= 10 ? Math.round(tbspRaw) : (Math.round(tbspRaw * 2) / 2);
-            return `≈ ${ml} мл • ${tbsp} ст. л.`;
+        function formatTablespoons(grams, gramsPerTbsp) {
+            if (!grams || grams <= 0) return '0 ст. л.';
+            const raw = grams / gramsPerTbsp;
+            if (raw < 1) {
+                const small = Math.max(0.1, Math.round(raw * 10) / 10);
+                return `${small} ст. л.`;
+            }
+            if (raw < 10) {
+                return `${Math.round(raw * 2) / 2} ст. л.`;
+            }
+            return `${Math.round(raw)} ст. л.`;
+        }
+
+        function formatIngredientMeta(item, value) {
+            const safeVal = Math.max(0, Number(value) || 0);
+            if (item.unit === 'шт') {
+                const approxGrams = Math.round(safeVal * (item.weightPerUnit || 55));
+                return `≈ ${approxGrams} г`;
+            }
+
+            const gramsPerTbsp = item.key === 'yeast'
+                ? item.tbspGramsByType[yeastType]
+                : (item.tbspGrams || 15);
+            const tbspText = formatTablespoons(safeVal, gramsPerTbsp);
+
+            if (item.isOil) {
+                const ml = Math.round(safeVal / 0.916);
+                return `≈ ${ml} мл • ${tbspText}`;
+            }
+            if (item.isLiquid) {
+                const ml = Math.round(safeVal);
+                return `≈ ${ml} мл • ${tbspText}`;
+            }
+            return `≈ ${tbspText}`;
         }
 
         function getItemBase(item) {
@@ -739,6 +808,12 @@
             }
             if (!completedSteps[key]) {
                 completedSteps[key] = {};
+            }
+            if (activeStageByRecipe[key] === undefined) {
+                activeStageByRecipe[key] = 0;
+            }
+            if (!completedStagesByRecipe[key]) {
+                completedStagesByRecipe[key] = {};
             }
 
             optionalEnabled = {};
@@ -800,7 +875,7 @@
                            >
                            <span class="absolute right-0 bottom-0.5 text-xs font-mono text-stone-500">${unitLabel}</span>
                        </div>
-                       ${item.isOil ? `<div id="oil-meta" class="text-[11px] font-mono text-stone-500 mt-1">${formatOliveOilMeta(baseVal * currentScale)}</div>` : ''}`
+                       <div id="meta-${item.key}" class="text-[11px] font-mono text-stone-500 mt-1">${formatIngredientMeta(item, baseVal * currentScale)}</div>`
                     : `<div class="text-xs font-mono text-stone-400 pt-1">Не добавлено</div>`;
 
                 card.innerHTML = `${headerHtml}${yeastToggleHtml}${inputHtml}`;
@@ -835,17 +910,16 @@
             currentScale = rawVal / getItemBase(changedItem);
 
             recipe.items.forEach(item => {
+                const scaledVal = getItemBase(item) * currentScale;
                 if (item.key !== changedKey) {
                     const el = document.getElementById(`ing-${item.key}`);
                     if (el) {
-                        el.value = formatNumber(getItemBase(item) * currentScale);
+                        el.value = formatNumber(scaledVal);
                     }
                 }
-                if (item.isOil) {
-                    const oilMetaEl = document.getElementById('oil-meta');
-                    if (oilMetaEl) {
-                        oilMetaEl.textContent = formatOliveOilMeta(getItemBase(item) * currentScale);
-                    }
+                const metaEl = document.getElementById(`meta-${item.key}`);
+                if (metaEl) {
+                    metaEl.textContent = formatIngredientMeta(item, scaledVal);
                 }
             });
 
@@ -945,19 +1019,136 @@
         }
 
         /* ==========================================================================
+           УПРАВЛЕНИЕ ТЕКУЩИМ ЭТАПОМ (ЗЕЛЁНАЯ ОБВОДКА В 1 НАЖАТИЕ)
+           ========================================================================== */
+        function getRecipeStages(recipe) {
+            const stages = [];
+            recipe.blocks.forEach((block, bIdx) => {
+                if (block.type === 'ferment2') {
+                    stages.push({ short: block.stage1Short || '1.1 Подъём' });
+                    stages.push({ short: block.stage2Short || '1.2 Расстойка' });
+                } else if (block.type === 'bake2') {
+                    stages.push({ short: block.stage1.short || '2.1 Этап 1' });
+                    stages.push({ short: block.stage2.short || '2.2 Этап 2' });
+                } else {
+                    stages.push({ short: block.shortTitle || block.title });
+                }
+            });
+            return stages;
+        }
+
+        function setActiveStage(stageIdx) {
+            activeStageByRecipe[currentRecipeKey] = stageIdx;
+            renderWorkflow();
+        }
+
+        function completeStage(stageIdx) {
+            const recipe = RECIPES[currentRecipeKey];
+            const totalStages = getRecipeStages(recipe).length;
+            if (!completedStagesByRecipe[currentRecipeKey]) {
+                completedStagesByRecipe[currentRecipeKey] = {};
+            }
+            completedStagesByRecipe[currentRecipeKey][stageIdx] = true;
+            activeStageByRecipe[currentRecipeKey] = Math.min(totalStages, stageIdx + 1);
+            renderWorkflow();
+        }
+
+        function resetStagesProgress() {
+            completedStagesByRecipe[currentRecipeKey] = {};
+            activeStageByRecipe[currentRecipeKey] = 0;
+            renderWorkflow();
+        }
+
+        function handleStageCardClick(event, stageIdx) {
+            if (event.target.closest('button, input, label, select, textarea')) return;
+            if (activeStageByRecipe[currentRecipeKey] !== stageIdx) {
+                setActiveStage(stageIdx);
+            }
+        }
+
+        function renderStageBadgeAndAction(stageIdx, totalStages) {
+            const activeIdx = activeStageByRecipe[currentRecipeKey] ?? 0;
+            const doneMap = completedStagesByRecipe[currentRecipeKey] || {};
+            const isActive = stageIdx === activeIdx;
+            const isDone = Boolean(doneMap[stageIdx]);
+
+            if (isActive) {
+                const nextLabel = stageIdx >= totalStages - 1 ? 'Завершить ✓' : 'Готово →';
+                return `
+                    <div class="flex items-center gap-1.5 shrink-0">
+                        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-emerald-600 text-white text-[11px] font-semibold">
+                            <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>Сейчас
+                        </span>
+                        <button type="button" onclick="completeStage(${stageIdx})" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg transition cursor-pointer">
+                            ${nextLabel}
+                        </button>
+                    </div>
+                `;
+            }
+
+            if (isDone) {
+                return `<span class="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-semibold shrink-0">✓ Готово</span>`;
+            }
+
+            return '';
+        }
+
+        function renderStageNavigator(stages) {
+            const nav = document.getElementById('stageNavigator');
+            const activeIdx = activeStageByRecipe[currentRecipeKey] ?? 0;
+            const doneMap = completedStagesByRecipe[currentRecipeKey] || {};
+
+            const pillsHtml = stages.map((st, idx) => {
+                const isActive = idx === activeIdx;
+                const isDone = Boolean(doneMap[idx]);
+
+                let cls = 'px-2.5 py-1 rounded-lg text-xs font-medium transition cursor-pointer border ';
+                if (isActive) {
+                    cls += 'bg-emerald-600 text-white border-emerald-600 font-semibold shadow-2xs';
+                } else if (isDone) {
+                    cls += 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100';
+                } else {
+                    cls += 'bg-white text-stone-600 border-stone-200 hover:border-stone-300 hover:text-stone-900';
+                }
+
+                const prefix = isDone && !isActive ? '✓ ' : '';
+                return `<button type="button" onclick="setActiveStage(${idx})" class="${cls}">${prefix}${st.short}</button>`;
+            }).join('');
+
+            const allDone = activeIdx >= stages.length;
+            const resetBtnHtml = (allDone || Object.keys(doneMap).length > 0)
+                ? `<button type="button" onclick="resetStagesProgress()" class="ml-auto px-2.5 py-1 text-xs font-medium text-stone-500 hover:text-stone-900 bg-stone-200/70 hover:bg-stone-200 rounded-lg cursor-pointer">Сначала</button>`
+                : '';
+
+            nav.innerHTML = `${pillsHtml}${resetBtnHtml}`;
+        }
+
+        /* ==========================================================================
            ОТРИСОВКА ИНДИВИДУАЛЬНЫХ ЭТАПОВ РЕЦЕПТА
            ========================================================================== */
-        function createTimerBoxHtml(timerId, title, badgeText, badgeId, presets, customUnit, customInitVal, onCustomChangeExpr) {
+        function createTimerBoxHtml(timerId, title, badgeText, badgeId, presets, customUnit, customInitVal, onCustomChangeExpr, stageIdx, totalStages) {
+            const activeIdx = activeStageByRecipe[currentRecipeKey] ?? 0;
+            const isStageActive = stageIdx === activeIdx;
+
+            const boxBorderClass = isStageActive
+                ? 'border-2 border-emerald-500 ring-4 ring-emerald-500/15 bg-emerald-50/35'
+                : 'border border-stone-200 bg-stone-50 hover:border-stone-300';
+
+            const statusControlsHtml = renderStageBadgeAndAction(stageIdx, totalStages);
+
             const presetButtonsHtml = presets.map(p => {
                 const badgeAttr = p.badge ? `data-badge="${p.badge}"` : '';
                 return `<button type="button" ${badgeAttr} onclick="applyPreset('${timerId}', ${p.mins}, this.dataset.badge, '${badgeId || ''}')" class="px-2.5 py-1 text-xs font-mono bg-white border border-stone-200 hover:bg-stone-100 rounded-lg cursor-pointer">${p.label}</button>`;
             }).join('');
 
             return `
-                <div class="p-3.5 bg-stone-50 border border-stone-200 rounded-xl space-y-2.5">
-                    <div class="flex items-center justify-between gap-2">
-                        <span class="text-xs font-bold text-stone-800">${title}</span>
-                        ${badgeText ? `<span ${badgeId ? `id="${badgeId}"` : ''} class="px-2 py-0.5 bg-amber-100 text-amber-900 font-mono text-xs font-bold rounded-md shrink-0">${badgeText}</span>` : ''}
+                <div onclick="handleStageCardClick(event, ${stageIdx})" class="p-3.5 ${boxBorderClass} rounded-xl space-y-2.5 transition cursor-pointer">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="text-xs font-bold text-stone-800">${title}</span>
+                            ${badgeText ? `<span ${badgeId ? `id="${badgeId}"` : ''} class="px-2 py-0.5 bg-amber-100 text-amber-900 font-mono text-xs font-bold rounded-md shrink-0">${badgeText}</span>` : ''}
+                        </div>
+                        ${statusControlsHtml}
                     </div>
 
                     <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 bg-stone-900 text-white rounded-xl">
@@ -990,39 +1181,64 @@
             const recipe = RECIPES[currentRecipeKey];
             const container = document.getElementById('workflowContainer');
             container.innerHTML = '';
+            timerToStageIndex = {};
+
+            const stages = getRecipeStages(recipe);
+            const totalStages = stages.length;
+            const activeIdx = activeStageByRecipe[currentRecipeKey] ?? 0;
+            renderStageNavigator(stages);
 
             const activeTimerIds = [];
+            let stageCursor = 0;
 
             recipe.blocks.forEach((block, bIdx) => {
                 const section = document.createElement('section');
-                section.className = 'bg-white border border-stone-300 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4';
 
                 if (block.type === 'steps') {
+                    const sIdx = stageCursor++;
+                    const isStageActive = sIdx === activeIdx;
+                    section.onclick = (e) => handleStageCardClick(e, sIdx);
+                    section.className = isStageActive
+                        ? 'bg-emerald-50/20 border-2 border-emerald-500 ring-4 ring-emerald-500/15 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4 transition cursor-pointer'
+                        : 'bg-white border border-stone-300 hover:border-stone-400 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4 transition cursor-pointer';
+
                     const stepState = completedSteps[currentRecipeKey] || {};
-                    const itemsHtml = block.steps.map((text, sIdx) => {
-                        const done = Boolean(stepState[sIdx]);
+                    const itemsHtml = block.steps.map((text, stepIdx) => {
+                        const done = Boolean(stepState[stepIdx]);
                         return `
-                            <label class="flex items-start gap-3 p-3 rounded-xl border transition cursor-pointer select-none ${done ? 'bg-stone-100/70 border-stone-200 text-stone-400' : 'bg-stone-50 border-stone-200 hover:border-stone-300 text-stone-800'}">
-                                <input type="checkbox" ${done ? 'checked' : ''} onchange="toggleRecipeStep(${sIdx}, this.checked)" class="mt-0.5 w-4 h-4 rounded accent-stone-900 cursor-pointer shrink-0">
+                            <label class="flex items-start gap-3 p-3 rounded-xl border transition cursor-pointer select-none ${done ? 'bg-stone-100/70 border-stone-200 text-stone-400' : 'bg-white/90 border-stone-200 hover:border-stone-300 text-stone-800'}">
+                                <input type="checkbox" ${done ? 'checked' : ''} onchange="toggleRecipeStep(${stepIdx}, this.checked)" class="mt-0.5 w-4 h-4 rounded accent-emerald-600 cursor-pointer shrink-0">
                                 <span class="text-xs sm:text-[13px] leading-relaxed ${done ? 'line-through' : ''}">
-                                    <strong class="font-mono mr-1">${sIdx + 1}.</strong>${text}
+                                    <strong class="font-mono mr-1">${stepIdx + 1}.</strong>${text}
                                 </span>
                             </label>
                         `;
                     }).join('');
 
                     section.innerHTML = `
-                        <div class="flex items-baseline justify-between gap-2">
-                            <h2 class="text-base font-bold text-stone-900">${block.title}</h2>
-                            <span class="text-xs text-stone-500">${block.subtitle || ''}</span>
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <div>
+                                <h2 class="text-base font-bold text-stone-900">${block.title}</h2>
+                                <span class="text-xs text-stone-500">${block.subtitle || ''}</span>
+                            </div>
+                            ${renderStageBadgeAndAction(sIdx, totalStages)}
                         </div>
                         <div class="space-y-2">${itemsHtml}</div>
                     `;
                 } else if (block.type === 'ferment2') {
+                    const s1Idx = stageCursor++;
+                    const s2Idx = stageCursor++;
+                    const hasActiveChild = (activeIdx === s1Idx || activeIdx === s2Idx);
+                    section.className = hasActiveChild
+                        ? 'bg-white border-2 border-emerald-300 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4 transition'
+                        : 'bg-white border border-stone-300 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4 transition';
+
                     const mode = fermentModeByRecipe[currentRecipeKey] || 'warm';
                     const isCold = mode === 'cold';
                     const t1Id = `${currentRecipeKey}_fermentMain`;
                     const t2Id = `${currentRecipeKey}_fermentProof`;
+                    timerToStageIndex[t1Id] = s1Idx;
+                    timerToStageIndex[t2Id] = s2Idx;
 
                     ensureTimer(t1Id, {
                         mins: isCold ? block.coldMins : block.warmMins,
@@ -1083,7 +1299,9 @@
                             mainPresets,
                             customUnit,
                             customInitVal,
-                            `onFermentCustomChange('${t1Id}', this.value)`
+                            `onFermentCustomChange('${t1Id}', this.value)`,
+                            s1Idx,
+                            totalStages
                         )}
 
                         ${foldsHtml}
@@ -1098,12 +1316,22 @@
                                 block.proofPresets,
                                 'мин',
                                 Math.round(timers[t2Id].defaultSec / 60),
-                                `setTimerMinutes('${t2Id}', this.value)`
+                                `setTimerMinutes('${t2Id}', this.value)`,
+                                s2Idx,
+                                totalStages
                             )}
                         </div>
                     `;
                 } else if (block.type === 'singleTimer') {
+                    const sIdx = stageCursor++;
+                    const isStageActive = sIdx === activeIdx;
+                    section.onclick = (e) => handleStageCardClick(e, sIdx);
+                    section.className = isStageActive
+                        ? 'bg-emerald-50/20 border-2 border-emerald-500 ring-4 ring-emerald-500/15 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4 transition cursor-pointer'
+                        : 'bg-white border border-stone-300 hover:border-stone-400 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4 transition cursor-pointer';
+
                     const tId = `${currentRecipeKey}_single_${bIdx}`;
+                    timerToStageIndex[tId] = sIdx;
                     ensureTimer(tId, {
                         mins: block.mins,
                         showHours: false,
@@ -1112,9 +1340,12 @@
                     activeTimerIds.push(tId);
 
                     section.innerHTML = `
-                        <div>
-                            <h2 class="text-base font-bold text-stone-900">${block.title}</h2>
-                            <p class="text-xs text-stone-600 mt-0.5 leading-relaxed">${block.instruction}</p>
+                        <div class="flex flex-wrap items-start justify-between gap-2">
+                            <div>
+                                <h2 class="text-base font-bold text-stone-900">${block.title}</h2>
+                                <p class="text-xs text-stone-600 mt-0.5 leading-relaxed">${block.instruction}</p>
+                            </div>
+                            ${renderStageBadgeAndAction(sIdx, totalStages)}
                         </div>
                         ${createTimerBoxHtml(
                             tId,
@@ -1124,12 +1355,23 @@
                             block.presets,
                             'мин',
                             Math.round(timers[tId].defaultSec / 60),
-                            `setTimerMinutes('${tId}', this.value)`
+                            `setTimerMinutes('${tId}', this.value)`,
+                            sIdx,
+                            totalStages
                         )}
                     `;
                 } else if (block.type === 'bake2') {
+                    const s1Idx = stageCursor++;
+                    const s2Idx = stageCursor++;
+                    const hasActiveChild = (activeIdx === s1Idx || activeIdx === s2Idx);
+                    section.className = hasActiveChild
+                        ? 'bg-white border-2 border-emerald-300 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4 transition'
+                        : 'bg-white border border-stone-300 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4 transition';
+
                     const t1Id = `${currentRecipeKey}_bake1`;
                     const t2Id = `${currentRecipeKey}_bake2`;
+                    timerToStageIndex[t1Id] = s1Idx;
+                    timerToStageIndex[t2Id] = s2Idx;
                     ensureTimer(t1Id, {
                         mins: block.stage1.mins,
                         showHours: false,
@@ -1155,7 +1397,9 @@
                             block.stage1.presets,
                             'мин',
                             Math.round(timers[t1Id].defaultSec / 60),
-                            `setTimerMinutes('${t1Id}', this.value)`
+                            `setTimerMinutes('${t1Id}', this.value)`,
+                            s1Idx,
+                            totalStages
                         )}
                         ${createTimerBoxHtml(
                             t2Id,
@@ -1165,10 +1409,19 @@
                             block.stage2.presets,
                             'мин',
                             Math.round(timers[t2Id].defaultSec / 60),
-                            `setTimerMinutes('${t2Id}', this.value)`
+                            `setTimerMinutes('${t2Id}', this.value)`,
+                            s2Idx,
+                            totalStages
                         )}
                     `;
                 } else if (block.type === 'skillet') {
+                    const sIdx = stageCursor++;
+                    const isStageActive = sIdx === activeIdx;
+                    section.onclick = (e) => handleStageCardClick(e, sIdx);
+                    section.className = isStageActive
+                        ? 'bg-emerald-50/20 border-2 border-emerald-500 ring-4 ring-emerald-500/15 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4 transition cursor-pointer'
+                        : 'bg-white border border-stone-300 hover:border-stone-400 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4 transition cursor-pointer';
+
                     const pointsHtml = block.points.map((pt, idx) => `
                         <li class="flex items-start gap-2.5 text-xs sm:text-[13px] text-stone-700 leading-relaxed">
                             <span class="w-5 h-5 rounded-full bg-stone-200 text-stone-800 font-mono text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">${idx + 1}</span>
@@ -1178,8 +1431,11 @@
 
                     section.innerHTML = `
                         <div class="flex flex-wrap items-center justify-between gap-2">
-                            <h2 class="text-base font-bold text-stone-900">${block.title}</h2>
-                            <span class="px-2.5 py-0.5 bg-amber-100 text-amber-900 font-mono text-xs font-bold rounded-md">${block.heatBadge}</span>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <h2 class="text-base font-bold text-stone-900">${block.title}</h2>
+                                <span class="px-2.5 py-0.5 bg-amber-100 text-amber-900 font-mono text-xs font-bold rounded-md">${block.heatBadge}</span>
+                            </div>
+                            ${renderStageBadgeAndAction(sIdx, totalStages)}
                         </div>
                         <ul class="space-y-2.5 pt-1">${pointsHtml}</ul>
                     `;
@@ -1316,6 +1572,14 @@
                 }
                 t.endTimestamp = Date.now() + t.remainingSec * 1000;
                 t.running = true;
+
+                // Запуск таймера автоматически выделяет соответствующий этап зелёной рамкой
+                const linkedStage = timerToStageIndex[id];
+                if (linkedStage !== undefined && activeStageByRecipe[currentRecipeKey] !== linkedStage) {
+                    activeStageByRecipe[currentRecipeKey] = linkedStage;
+                    renderWorkflow();
+                    return;
+                }
             }
             renderTimer(id);
         }
@@ -1394,6 +1658,13 @@
                         t.running = false;
                         t.endTimestamp = null;
                         triggerAlarm(t.label);
+
+                        // По окончании таймера автоматически переводим зелёную рамку на следующий этап
+                        const linkedStage = timerToStageIndex[id];
+                        if (linkedStage !== undefined) {
+                            completeStage(linkedStage);
+                            return;
+                        }
                     }
                     renderTimer(id);
                 }
