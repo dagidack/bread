@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Breaking Bread</title>
-    <!-- Оригинальный значок вкладки: румяный батон с паром -->
-<link rel="icon" type="image/png" href="img/svgviewer-png-output.png">
-
+    <link rel="icon" type="image/png" href="img/svgviewer-png-output.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -117,7 +115,7 @@
     </div>
 
     <!-- ======================================================================
-         ГЛАВНЫЙ ЭКРАН: ШАПКА + КАРТОЧКИ ВЫПЕЧКИ + КАРТОЧКИ ПАСТЫ
+         ГЛАВНЫЙ ЭКРАН: ШАПКА + ЯЙЦА + ВЫПЕЧКА + ПАСТА
          ====================================================================== -->
     <div id="homeView" class="min-h-screen">
 
@@ -153,11 +151,20 @@
         </header>
 
         <main class="max-w-3xl mx-auto px-4 pb-12 space-y-8">
-            <!-- Полоса активных фоновых таймеров (рецепты + паста) -->
+            <!-- Полоса активных фоновых таймеров (яйца + рецепты + паста) -->
             <div id="homeActiveTimers" class="hidden space-y-2"></div>
 
-            <!-- Раздел 1: Выпечка и тесто -->
+            <!-- Раздел 1: Варка яиц и пашот -->
             <section class="space-y-3">
+                <div class="flex items-center justify-between px-0.5">
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-stone-500">Яйца</h2>
+                    <span class="text-xs text-stone-400">Стадии варки и пашот</span>
+                </div>
+                <div id="eggCardsGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4"></div>
+            </section>
+
+            <!-- Раздел 2: Выпечка и тесто -->
+            <section class="pt-4 border-t border-stone-200/90 space-y-3">
                 <div class="flex items-center justify-between px-0.5">
                     <h1 class="text-sm font-bold uppercase tracking-wider text-stone-500">Выберите рецепт</h1>
                     <span class="text-xs text-stone-400">10 рецептов</span>
@@ -165,22 +172,13 @@
                 <div id="recipeCardsGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4"></div>
             </section>
 
-            <!-- Раздел 2: Паста и макароны -->
+            <!-- Раздел 3: Паста и макароны -->
             <section class="pt-4 border-t border-stone-200/90 space-y-3">
                 <div class="flex items-center justify-between px-0.5">
                     <h2 class="text-sm font-bold uppercase tracking-wider text-stone-500">Паста и макароны</h2>
                     <span class="text-xs text-stone-400">11 видов • Al Dente −1:30</span>
                 </div>
                 <div id="pastaCardsGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4"></div>
-            </section>
-
-            <!-- Раздел 3: Варка яиц и пашот -->
-            <section class="pt-4 border-t border-stone-200/90 space-y-3">
-                <div class="flex items-center justify-between px-0.5">
-                    <h2 class="text-sm font-bold uppercase tracking-wider text-stone-500">Яйца</h2>
-                    <span class="text-xs text-stone-400">Стадии варки и пашот</span>
-                </div>
-                <div id="eggCardsGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4"></div>
             </section>
         </main>
 
@@ -480,7 +478,7 @@
     </div>
 
     <!-- ======================================================================
-         ОБЩИЙ ВИДЖЕТ МИНИ-ИГР (ПЕРЕНОСИТСЯ НА АКТИВНЫЙ ЭКРАН РЕЦЕПТА ИЛИ ПАСТЫ)
+         ОБЩИЙ ВИДЖЕТ МИНИ-ИГР (ПЕРЕНОСИТСЯ НА АКТИВНЫЙ ЭКРАН РЕЦЕПТА, ПАСТЫ ИЛИ ЯИЦ)
          ====================================================================== -->
     <div id="miniGamesWidget" class="hidden bg-white border border-stone-300 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4">
         <div class="flex flex-wrap items-center justify-between gap-2">
@@ -1187,7 +1185,7 @@
                 id: 'boiled',
                 title: 'Варка яиц',
                 subtitle: '4 стадии: всмятку, в мешочек, кремовый, вкрутую',
-                image: 'img/egg.jpg',
+                image: 'img/eggV.jpg',
                 fallbackImage: EGG_SVG_BOILED,
                 badge: '4:30 – 10:30'
             },
@@ -1195,7 +1193,7 @@
                 id: 'poached',
                 title: 'Яйцо пашот',
                 subtitle: 'Без скорлупы • Нежный белок и жидкий центр',
-                image: 'img/poached.jpg',
+                image: 'img/Poachedegg.jpg',
                 fallbackImage: EGG_SVG_POACHED,
                 badge: '2:30 – 3:30'
             }
@@ -2916,9 +2914,9 @@
             document.getElementById('eggView').classList.add('hidden');
             document.getElementById('homeView').classList.remove('hidden');
 
+            renderEggCards();
             renderRecipeCards();
             renderPastaCards();
-            renderEggCards();
             renderHomeActiveTimers();
             saveGlobalState();
         }
@@ -2926,6 +2924,26 @@
         function renderHomeActiveTimers() {
             const container = document.getElementById('homeActiveTimers');
             if (!container) return;
+
+            const eggTimersHtml = Object.entries(eggTimers)
+                .filter(([, et]) => et.running)
+                .map(([eggId, et]) => {
+                    const cardInfo = EGG_CARDS.find(c => c.id === eggId);
+                    const eggName = cardInfo ? cardInfo.title : 'Яйца';
+                    const timeStr = formatTime(et.remainingSec, false);
+                    return `
+                        <button type="button" onclick="openEgg('${eggId}')" class="w-full flex items-center justify-between gap-3 px-4 py-2.5 bg-neutral-900 hover:bg-neutral-800 text-white rounded-xl shadow-sm transition cursor-pointer text-left">
+                            <div class="flex items-center gap-2.5 min-w-0">
+                                <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping shrink-0"></span>
+                                <div class="truncate">
+                                    <span class="text-xs font-bold">${eggName}</span>
+                                    <span class="text-xs text-neutral-400 ml-1.5">${et.stageName || ''}</span>
+                                </div>
+                            </div>
+                            <span id="home-egg-timer-${eggId}" class="font-mono text-sm font-bold text-amber-400 tabular-nums shrink-0">${timeStr}</span>
+                        </button>
+                    `;
+                });
 
             const recipeTimersHtml = Object.entries(timers)
                 .filter(([, t]) => t.running)
@@ -2969,27 +2987,7 @@
                     `;
                 });
 
-            const eggTimersHtml = Object.entries(eggTimers)
-                .filter(([, et]) => et.running)
-                .map(([eggId, et]) => {
-                    const cardInfo = EGG_CARDS.find(c => c.id === eggId);
-                    const eggName = cardInfo ? cardInfo.title : 'Яйца';
-                    const timeStr = formatTime(et.remainingSec, false);
-                    return `
-                        <button type="button" onclick="openEgg('${eggId}')" class="w-full flex items-center justify-between gap-3 px-4 py-2.5 bg-neutral-900 hover:bg-neutral-800 text-white rounded-xl shadow-sm transition cursor-pointer text-left">
-                            <div class="flex items-center gap-2.5 min-w-0">
-                                <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping shrink-0"></span>
-                                <div class="truncate">
-                                    <span class="text-xs font-bold">${eggName}</span>
-                                    <span class="text-xs text-neutral-400 ml-1.5">${et.stageName || ''}</span>
-                                </div>
-                            </div>
-                            <span id="home-egg-timer-${eggId}" class="font-mono text-sm font-bold text-amber-400 tabular-nums shrink-0">${timeStr}</span>
-                        </button>
-                    `;
-                });
-
-            const allHtml = [...recipeTimersHtml, ...pastaTimersHtml, ...eggTimersHtml];
+            const allHtml = [...eggTimersHtml, ...recipeTimersHtml, ...pastaTimersHtml];
             if (allHtml.length === 0) {
                 container.classList.add('hidden');
                 container.innerHTML = '';
@@ -3856,15 +3854,15 @@
                 openEgg(currentEggId);
             } else {
                 currentView = 'home';
+                renderEggCards();
                 renderRecipeCards();
                 renderPastaCards();
-                renderEggCards();
                 renderHomeActiveTimers();
             }
         } else {
+            renderEggCards();
             renderRecipeCards();
             renderPastaCards();
-            renderEggCards();
             renderHomeActiveTimers();
         }
     </script>
