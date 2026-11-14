@@ -163,6 +163,15 @@
                 </div>
                 <div id="recipeCardsGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4"></div>
             </section>
+
+            <!-- Сетка карточек пасты -->
+            <section class="space-y-3 mt-8 pt-6 border-t border-stone-200">
+                <div class="flex items-center justify-between px-0.5">
+                    <h1 class="text-sm font-bold uppercase tracking-wider text-stone-500">Паста и макароны</h1>
+                    <span class="text-xs text-stone-400">11 видов</span>
+                </div>
+                <div id="pastaCardsGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4"></div>
+            </section>
         </main>
 
     </div>
@@ -223,6 +232,51 @@
         <!-- ДИНАМИЧЕСКИЕ ЭТАПЫ ПРИГОТОВЛЕНИЯ (адаптируются под каждый рецепт) -->
         <div id="workflowContainer" class="space-y-5"></div>
 
+    </div>
+
+    <!-- ОТДЕЛЬНАЯ СТРАНИЦА ПАСТЫ С АНАЛОГОВЫМ ТАЙМЕРОМ -->
+    <div id="pastaView" class="hidden relative z-10 max-w-md mx-auto px-4 py-6 sm:py-10 space-y-8">
+        
+        <div class="flex items-center justify-between gap-3">
+            <button type="button" onclick="goBackHome()" class="inline-flex items-center gap-2 px-3.5 py-2 bg-white hover:bg-stone-50 active:bg-stone-100 border border-stone-300 rounded-xl text-sm font-semibold text-stone-800 shadow-2xs transition cursor-pointer">
+                <svg class="w-4 h-4 text-stone-600" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                </svg>
+                <span>Назад к меню</span>
+            </button>
+        </div>
+
+        <div class="text-center space-y-1">
+            <h2 id="pastaViewName" class="text-4xl font-bold text-stone-900 tracking-tight">Conchiglie</h2>
+            <div class="text-base font-bold tracking-widest uppercase"><span id="pastaViewBrand">RUMMO</span> <span id="pastaViewNum" class="text-stone-500">No 42</span></div>
+        </div>
+
+        <div class="relative w-[280px] h-[280px] mx-auto flex flex-col items-center justify-center">
+            <svg width="280" height="280" viewBox="0 0 280 280" class="absolute inset-0 -rotate-90">
+                <!-- Базовый серый круг -->
+                <circle cx="140" cy="140" r="130" fill="none" stroke="#f5f5f4" stroke-width="12"></circle>
+                <!-- Маркер Al Dente (поворачивается динамически) -->
+                <g id="alDenteMarkerGroup" class="transition-transform duration-300">
+                    <line x1="140" y1="2" x2="140" y2="20" stroke="#ef4444" stroke-width="5" stroke-linecap="round"></line>
+                </g>
+                <!-- Круг прогресса -->
+                <circle id="pastaProgress" cx="140" cy="140" r="130" fill="none" stroke="#f59e0b" stroke-width="12" stroke-dasharray="816.82" stroke-dashoffset="0" stroke-linecap="round" class="transition-all duration-200 ease-linear"></circle>
+            </svg>
+            <!-- Цифровой дисплей таймера -->
+            <div class="relative z-10 flex flex-col items-center justify-center">
+                <div id="pastaTimeDisplay" class="text-6xl font-mono font-bold tracking-tighter text-stone-800 tabular-nums">13:00</div>
+                <div id="pastaStatusDisplay" class="text-sm font-semibold text-stone-400 mt-1 uppercase tracking-widest">до готовности</div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 pt-2">
+            <button id="pastaBtnStart" onclick="togglePastaTimer()" class="h-12 bg-amber-500 hover:bg-amber-400 text-white text-base font-bold rounded-xl shadow transition cursor-pointer">
+                Старт
+            </button>
+            <button onclick="resetPastaTimer()" class="h-12 bg-stone-200 hover:bg-stone-300 text-stone-700 text-base font-bold rounded-xl transition cursor-pointer">
+                Сброс
+            </button>
+        </div>
     </div>
 
     <script>
@@ -860,6 +914,20 @@
             }
         };
 
+        const PASTAS = [
+            { id: 'p1', name: 'Conchiglie', brand: 'RUMMO', num: 'No 42', brandColor: '#e32222', img: 'img/paste/Conchiglie.jpeg', time: 13, alDente: 11 },
+            { id: 'p2', name: 'Spaghetti', brand: 'RUMMO', num: 'No 3', brandColor: '#e32222', img: 'img/paste/Spaghetti.jpeg', time: 11, alDente: 9 },
+            { id: 'p3', name: 'Penne Rigate', brand: 'RUMMO', num: 'No 66', brandColor: '#e32222', img: 'img/paste/Penne.jpg', time: 11, alDente: 9 },
+            { id: 'p4', name: 'Integrale Fusilli', brand: 'RUMMO', num: 'No 48', brandColor: '#e32222', img: 'img/paste/integraleFusilli.jpg', time: 8, alDente: 7 },
+            { id: 'p5', name: 'Fusilli', brand: 'RUMMO', num: 'No 48', brandColor: '#e32222', img: 'img/paste/Fusilli.jpg', time: 11, alDente: 9 },
+            { id: 'p6', name: 'Mezzi Rigatoni', brand: 'RUMMO', num: 'No 51', brandColor: '#e32222', img: 'img/paste/rigatoni.jpg', time: 14, alDente: 12 },
+            { id: 'p7', name: 'Farfalle', brand: 'RUMMO', num: 'No 85', brandColor: '#e32222', img: 'img/paste/Farfalle.jpg', time: 12, alDente: 10 },
+            { id: 'p8', name: 'Linguine', brand: 'RUMMO', num: 'No 13', brandColor: '#e32222', img: 'img/paste/Linguine.jpg', time: 10, alDente: 8 },
+            { id: 'p9', name: 'Potato Gnocchi', brand: 'RUMMO', num: 'No 119', brandColor: '#e32222', img: 'img/paste/Perunagnocchi.jpg', time: 2, alDente: 0 },
+            { id: 'p10', name: 'Tagliatelle', brand: 'BARILLA', num: 'No 16', brandColor: '#003399', img: 'img/paste/Tagliatelle.jpg', time: 6, alDente: 5 },
+            { id: 'p11', name: 'Spaghetti', brand: 'BARILLA', num: 'n.5', brandColor: '#003399', img: 'img/paste/Spaghetti.jpg', time: 9, alDente: 7 }
+        ];
+
         const FERMENT_PRESETS = {
             warm: [
                 { label: '45 мин', mins: 45 },
@@ -882,8 +950,9 @@
         /* ==========================================================================
            СОСТОЯНИЕ ПРИЛОЖЕНИЯ
            ========================================================================== */
-        let currentView = 'home'; // 'home' | 'recipe'
+        let currentView = 'home'; // 'home' | 'recipe' | 'pasta'
         let currentRecipeKey = 'bread';
+        let currentPastaId = null;
         let currentScale = 1;
         let yeastType = 'dry'; // 'dry' | 'fresh'
         let optionalEnabled = {};
@@ -896,12 +965,13 @@
         let pizzaBallsCount = 2;
         let bunsSplitCount = 8;
 
-        const STORAGE_KEY = 'breakingBreadState_v1';
+        const STORAGE_KEY = 'breakingBreadState_v2';
 
         function saveGlobalState() {
             const state = {
                 currentView,
                 currentRecipeKey,
+                currentPastaId,
                 savedRecipeParams,
                 fermentModeByRecipe,
                 completedSteps,
@@ -920,7 +990,9 @@
                     endTimestamp: t.endTimestamp,
                     showHours: t.showHours,
                     label: t.label,
-                    recipeKey: t.recipeKey
+                    recipeKey: t.recipeKey,
+                    isPasta: t.isPasta,
+                    alDenteNotified: t.alDenteNotified
                 };
             }
             localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -934,6 +1006,7 @@
 
                 if (parsed.currentView) currentView = parsed.currentView;
                 if (parsed.currentRecipeKey) currentRecipeKey = parsed.currentRecipeKey;
+                if (parsed.currentPastaId) currentPastaId = parsed.currentPastaId;
 
                 Object.assign(savedRecipeParams, parsed.savedRecipeParams || {});
                 Object.assign(fermentModeByRecipe, parsed.fermentModeByRecipe || {});
@@ -989,7 +1062,7 @@
         }
 
         /* ==========================================================================
-           ЖИВАЯ WEB3 + CHEMISTRY АНИМАЦИЯ В ШАПКЕ
+           ЗВУКОВОЙ СИГНАЛ (WEB API)
            ========================================================================== */
         const headerFx = {
             nodes: [],
@@ -1655,6 +1728,22 @@
                 const t = timers[id];
                 if (t.running && t.endTimestamp) {
                     t.remainingSec = (t.endTimestamp - now) / 1000;
+                    
+                    // Проверка достижения Al Dente для пасты
+                    if (t.isPasta) {
+                        const pasta = PASTAS.find(p => p.id === t.recipeKey);
+                        if (pasta && pasta.alDente > 0) {
+                            const totalSec = pasta.time * 60;
+                            const alDenteSec = pasta.alDente * 60;
+                            const elapsedSec = totalSec - t.remainingSec;
+                            if (elapsedSec >= alDenteSec && !t.alDenteNotified) {
+                                t.alDenteNotified = true;
+                                triggerAlarm(`Паста ${pasta.name} достигла Al Dente!`);
+                                saveGlobalState();
+                            }
+                        }
+                    }
+
                     if (t.remainingSec <= 0) {
                         t.remainingSec = 0;
                         t.running = false;
@@ -1662,16 +1751,23 @@
                         triggerAlarm(t.label);
                         saveGlobalState();
 
-                        // По окончании таймера автоматически переводим зелёную рамку на следующий этап
-                        const linkedStage = timerToStageIndex[id];
-                        if (linkedStage !== undefined) {
-                            completeStage(linkedStage);
-                            return;
+                        if (!t.isPasta) {
+                            const linkedStage = timerToStageIndex[id];
+                            if (linkedStage !== undefined) {
+                                completeStage(linkedStage);
+                                return;
+                            }
                         }
                     }
-                    renderTimer(id);
+                    
+                    // Обновление UI активного экрана
+                    if (t.isPasta && currentView === 'pasta' && currentPastaId === t.recipeKey) {
+                        updatePastaTimerUI(currentPastaId);
+                    } else if (!t.isPasta) {
+                        renderTimer(id);
+                    }
 
-                    // Обновляем живой отсчёт на главной странице, если открыт каталог блюд
+                    // Обновляем живой отсчёт на главной странице
                     if (currentView === 'home') {
                         const timeStr = formatTime(t.remainingSec, t.showHours);
                         const homeBadge = document.getElementById(`home-timer-${id}`);
@@ -1684,7 +1780,7 @@
         }, 250);
 
         /* ==========================================================================
-           НАВИГАЦИЯ МЕЖДУ КАТАЛОГОМ БЛЮД И СТРАНИЦЕЙ РЕЦЕПТА
+           НАВИГАЦИЯ МЕЖДУ КАТАЛОГОМ БЛЮД И СТРАНИЦЕЙ РЕЦЕПТА/ПАСТЫ
            ========================================================================== */
         function saveCurrentRecipeState() {
             savedRecipeParams[currentRecipeKey] = {
@@ -1740,9 +1836,11 @@
             currentView = 'home';
 
             document.getElementById('recipeView').classList.add('hidden');
+            document.getElementById('pastaView').classList.add('hidden');
             document.getElementById('homeView').classList.remove('hidden');
 
             renderRecipeCards();
+            renderPastaCards();
             renderHomeActiveTimers();
             saveGlobalState();
         }
@@ -1760,11 +1858,12 @@
 
             container.classList.remove('hidden');
             container.innerHTML = runningEntries.map(([id, t]) => {
-                const recipe = RECIPES[t.recipeKey];
-                const recipeName = recipe ? recipe.tabLabel : 'Рецепт';
+                const recipeName = t.isPasta 
+                    ? (PASTAS.find(p => p.id === t.recipeKey)?.name || 'Паста')
+                    : (RECIPES[t.recipeKey] ? RECIPES[t.recipeKey].tabLabel : 'Рецепт');
                 const timeStr = formatTime(t.remainingSec, t.showHours);
                 return `
-                    <button type="button" onclick="openRecipe('${t.recipeKey}')" class="w-full flex items-center justify-between gap-3 px-4 py-2.5 bg-neutral-900 hover:bg-neutral-800 text-white rounded-xl shadow-sm transition cursor-pointer text-left">
+                    <button type="button" onclick="${t.isPasta ? `openPasta('${t.recipeKey}')` : `openRecipe('${t.recipeKey}')`}" class="w-full flex items-center justify-between gap-3 px-4 py-2.5 bg-neutral-900 hover:bg-neutral-800 text-white rounded-xl shadow-sm transition cursor-pointer text-left">
                         <div class="flex items-center gap-2.5 min-w-0">
                             <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping shrink-0"></span>
                             <div class="truncate">
@@ -1807,6 +1906,163 @@
                     </button>
                 `;
             }).join('');
+        }
+
+        /* ==========================================================================
+           ЛОГИКА ПАСТЫ И АНАЛОГОВОГО ТАЙМЕРА
+           ========================================================================== */
+        
+        function renderPastaCards() {
+            const grid = document.getElementById('pastaCardsGrid');
+            if (!grid) return;
+
+            grid.innerHTML = PASTAS.map(p => {
+                const runningEntry = Object.entries(timers).find(([, t]) => t.recipeKey === p.id && t.running && t.isPasta);
+                const timerBadgeHtml = runningEntry
+                    ? `<div class="absolute top-2.5 right-2.5 px-2 py-1 bg-neutral-900/90 backdrop-blur-xs text-amber-400 font-mono text-xs font-bold rounded-lg flex items-center gap-1.5 shadow">
+                           <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                           <span id="card-timer-pasta_${p.id}">${formatTime(runningEntry[1].remainingSec, false)}</span>
+                       </div>`
+                    : '';
+
+                return `
+                    <button type="button" onclick="openPasta('${p.id}')" class="group text-center bg-white border border-stone-200 hover:border-stone-400 rounded-3xl p-4 sm:p-5 shadow-sm hover:shadow transition flex flex-col items-center justify-between cursor-pointer relative overflow-hidden">
+                        <div class="relative w-full aspect-square flex items-center justify-center mb-3">
+                            <img src="${p.img}" alt="${p.name}" class="max-w-full max-h-full object-contain group-hover:scale-110 transition duration-300">
+                            ${timerBadgeHtml}
+                        </div>
+                        <div class="w-full">
+                            <div class="text-xl sm:text-2xl font-semibold text-black tracking-tight leading-none mb-1.5">${p.name}</div>
+                            <div class="text-xs sm:text-sm font-bold uppercase tracking-widest"><span style="color: ${p.brandColor}">${p.brand}</span> <span class="text-black">${p.num}</span></div>
+                        </div>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function ensurePastaTimer(id) {
+            const pasta = PASTAS.find(x => x.id === id);
+            const timerId = `pasta_${id}`;
+            if (!timers[timerId]) {
+                timers[timerId] = {
+                    defaultSec: pasta.time * 60,
+                    remainingSec: pasta.time * 60,
+                    running: false,
+                    endTimestamp: null,
+                    showHours: false,
+                    label: `Паста ${pasta.name} готова!`,
+                    recipeKey: id,
+                    isPasta: true,
+                    alDenteNotified: false
+                };
+            }
+            return timers[timerId];
+        }
+
+        function openPasta(pastaId) {
+            const pasta = PASTAS.find(p => p.id === pastaId);
+            if (!pasta) return;
+
+            if (currentView === 'recipe') saveCurrentRecipeState();
+            
+            currentPastaId = pastaId;
+            currentView = 'pasta';
+            ensurePastaTimer(pastaId);
+
+            document.getElementById('homeView').classList.add('hidden');
+            document.getElementById('recipeView').classList.add('hidden');
+            document.getElementById('pastaView').classList.remove('hidden');
+
+            document.getElementById('pastaViewName').textContent = pasta.name;
+            const brandEl = document.getElementById('pastaViewBrand');
+            brandEl.textContent = pasta.brand;
+            brandEl.style.color = pasta.brandColor;
+            document.getElementById('pastaViewNum').textContent = pasta.num;
+
+            // Настройка маркера Al Dente (угол)
+            const markerGroup = document.getElementById('alDenteMarkerGroup');
+            if (pasta.alDente > 0) {
+                markerGroup.style.display = 'block';
+                const angle = (pasta.alDente / pasta.time) * 360;
+                markerGroup.setAttribute('transform', `rotate(${angle}, 140, 140)`);
+            } else {
+                markerGroup.style.display = 'none';
+            }
+
+            updatePastaTimerUI(pastaId);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            saveGlobalState();
+        }
+
+        function updatePastaTimerUI(pastaId) {
+            const timerId = `pasta_${pastaId}`;
+            const t = timers[timerId];
+            if (!t) return;
+
+            // Обновление цифр
+            document.getElementById('pastaTimeDisplay').textContent = formatTime(t.remainingSec, false);
+            
+            const btn = document.getElementById('pastaBtnStart');
+            const status = document.getElementById('pastaStatusDisplay');
+
+            if (t.running) {
+                btn.textContent = 'Пауза';
+                btn.classList.replace('bg-amber-500', 'bg-stone-500');
+                btn.classList.replace('hover:bg-amber-400', 'hover:bg-stone-400');
+                status.textContent = t.alDenteNotified ? 'Al Dente пройдено' : 'кипит';
+                status.classList.add('text-amber-500');
+                status.classList.remove('text-stone-400');
+            } else {
+                btn.textContent = (t.remainingSec < t.defaultSec && t.remainingSec > 0) ? 'Продолжить' : 'Старт';
+                btn.classList.replace('bg-stone-500', 'bg-amber-500');
+                btn.classList.replace('hover:bg-stone-400', 'hover:bg-amber-400');
+                status.textContent = 'до готовности';
+                status.classList.remove('text-amber-500');
+                status.classList.add('text-stone-400');
+            }
+
+            // Обновление круга SVG (stroke-dashoffset от 0 до 816.82)
+            const circle = document.getElementById('pastaProgress');
+            const circumference = 816.82; 
+            const progress = t.remainingSec / t.defaultSec;
+            circle.style.strokeDashoffset = circumference - (progress * circumference);
+        }
+
+        function togglePastaTimer() {
+            if (!currentPastaId) return;
+            unlockAudio();
+            const timerId = `pasta_${currentPastaId}`;
+            const t = timers[timerId];
+            if (!t) return;
+
+            if (t.running) {
+                t.remainingSec = Math.max(0, (t.endTimestamp - Date.now()) / 1000);
+                t.running = false;
+                t.endTimestamp = null;
+            } else {
+                if (t.remainingSec <= 0) {
+                    t.remainingSec = t.defaultSec;
+                    t.alDenteNotified = false;
+                }
+                t.endTimestamp = Date.now() + t.remainingSec * 1000;
+                t.running = true;
+            }
+            updatePastaTimerUI(currentPastaId);
+            saveGlobalState();
+        }
+
+        function resetPastaTimer() {
+            if (!currentPastaId) return;
+            const timerId = `pasta_${currentPastaId}`;
+            const t = timers[timerId];
+            if (!t) return;
+
+            t.running = false;
+            t.endTimestamp = null;
+            t.remainingSec = t.defaultSec;
+            t.alDenteNotified = false;
+            updatePastaTimerUI(currentPastaId);
+            saveGlobalState();
         }
 
         /* ==========================================================================
@@ -2066,13 +2322,17 @@
                 loadRecipeState(currentRecipeKey);
                 renderIngredients();
                 renderWorkflow();
+            } else if (currentView === 'pasta' && currentPastaId) {
+                openPasta(currentPastaId);
             } else {
                 renderRecipeCards();
+                renderPastaCards();
                 renderHomeActiveTimers();
             }
         } else {
             // Первый запуск
             renderRecipeCards();
+            renderPastaCards();
             renderHomeActiveTimers();
         }
 
