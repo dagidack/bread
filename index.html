@@ -101,6 +101,9 @@
 </head>
 <body class="bg-stone-100 text-stone-900 font-sans antialiased min-h-screen">
 
+    <!-- Постоянная фоновая ч/б Web3-анимация на весь экран -->
+    <canvas id="bbHeroCanvas" class="fixed top-0 left-0 w-[100vw] h-[100vh] pointer-events-none" style="z-index: -1;"></canvas>
+
     <!-- Плашка звукового оповещения (вместо alert) -->
     <div id="alarmBanner" class="hidden fixed top-0 inset-x-0 z-50 bg-amber-600 text-white shadow-lg">
         <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
@@ -115,14 +118,11 @@
     </div>
 
     <!-- ГЛАВНЫЙ ЭКРАН: ПРОЗРАЧНАЯ ШАПКА НА ВСЮ ШИРИНУ + КАРТОЧКИ БЛЮД -->
-    <div id="homeView" class="min-h-screen">
+    <div id="homeView" class="min-h-screen relative z-10">
 
         <!-- Полноширинная прозрачная шапка без рамки и градиента в стиле ч/б -->
-        <header id="heroHeader" onclick="handleHeaderClick(event)" title="Нажмите, чтобы повторить анимацию" class="relative w-full overflow-hidden bg-transparent pt-7 pb-5 sm:pt-10 sm:pb-7 cursor-pointer select-none">
-            <!-- Постоянная фоновая ч/б Web3-анимация на прозрачном canvas -->
-            <canvas id="bbHeroCanvas" class="pointer-events-none absolute inset-0 w-full h-full"></canvas>
-
-            <div id="bbLogoContainer" class="relative z-10 max-w-3xl mx-auto px-4 flex flex-col items-center justify-center">
+        <header id="heroHeader" class="relative w-full bg-transparent pt-7 pb-5 sm:pt-10 sm:pb-7 select-none">
+            <div id="bbLogoContainer" onclick="replayLogoAnimation()" title="Нажмите, чтобы повторить анимацию" class="relative z-10 max-w-3xl mx-auto px-4 flex flex-col items-center justify-center cursor-pointer">
                 <!-- Первая строка: [Br]eaking -->
                 <div class="flex items-center">
                     <div class="bb-tile w-14 h-14 sm:w-16 sm:h-16 border-2 border-neutral-900 rounded-md flex flex-col justify-between p-1.5 text-white shrink-0">
@@ -168,7 +168,7 @@
     </div>
 
     <!-- ОТДЕЛЬНАЯ СТРАНИЦА РЕЦЕПТА -->
-    <div id="recipeView" class="hidden max-w-2xl mx-auto px-4 py-5 sm:py-8 space-y-5">
+    <div id="recipeView" class="hidden relative z-10 max-w-2xl mx-auto px-4 py-5 sm:py-8 space-y-5">
 
         <!-- Верхняя панель с кнопкой Назад -->
         <div class="flex items-center justify-between gap-3">
@@ -1005,13 +1005,6 @@
             if (!container) return;
             const clone = container.cloneNode(true);
             container.parentNode.replaceChild(clone, container);
-        }
-
-        function handleHeaderClick(event) {
-            replayLogoAnimation();
-            if (window.emitHeroPulse && event) {
-                window.emitHeroPulse(event.clientX, event.clientY);
-            }
         }
 
         /* ==========================================================================
@@ -2087,9 +2080,8 @@
            ПОСТОЯННАЯ МОНОХРОМНАЯ WEB3-АНИМАЦИЯ НА ПРОЗРАЧНОМ ФОНЕ ШАПКИ
            ========================================================================== */
         (function initHeroCanvas() {
-            const header = document.getElementById('heroHeader');
             const canvas = document.getElementById('bbHeroCanvas');
-            if (!header || !canvas) return;
+            if (!canvas) return;
             const ctx = canvas.getContext('2d');
 
             let width = 0;
@@ -2100,9 +2092,8 @@
             const pointer = { x: -9999, y: -9999 };
 
             function resizeCanvas() {
-                const rect = header.getBoundingClientRect();
-                width = Math.max(1, rect.width);
-                height = Math.max(1, rect.height);
+                width = window.innerWidth;
+                height = window.innerHeight;
                 dpr = Math.min(window.devicePixelRatio || 1, 2);
                 canvas.width = Math.floor(width * dpr);
                 canvas.height = Math.floor(height * dpr);
@@ -2134,34 +2125,39 @@
 
             // Плавное затухание прозрачности у самого низа, чтобы узлы растворялись без резкой границы
             function edgeAlpha(y) {
-                const bottomFadeStart = height * 0.72;
+                const bottomFadeStart = height * 0.65;
                 if (y <= bottomFadeStart) return 1;
                 return Math.max(0, 1 - (y - bottomFadeStart) / (height - bottomFadeStart));
             }
 
             window.emitHeroPulse = function (clientX, clientY) {
-                const rect = header.getBoundingClientRect();
                 pulses.push({
-                    x: clientX - rect.left,
-                    y: clientY - rect.top,
+                    x: clientX,
+                    y: clientY,
                     r: 6,
                     maxR: Math.max(140, width * 0.22),
                     alpha: 0.26
                 });
             };
 
-            header.addEventListener('pointermove', (e) => {
-                const rect = header.getBoundingClientRect();
-                pointer.x = e.clientX - rect.left;
-                pointer.y = e.clientY - rect.top;
+            window.addEventListener('pointermove', (e) => {
+                pointer.x = e.clientX;
+                pointer.y = e.clientY;
             });
-            header.addEventListener('pointerleave', () => {
+
+            document.addEventListener('pointerleave', () => {
                 pointer.x = -9999;
                 pointer.y = -9999;
             });
 
+            window.addEventListener('click', (e) => {
+                if (window.emitHeroPulse && e.isTrusted) {
+                    window.emitHeroPulse(e.clientX, e.clientY);
+                }
+            });
+
             function animate(now) {
-                if (currentView === 'home' && width > 0 && height > 0) {
+                if (width > 0 && height > 0) {
                     ctx.clearRect(0, 0, width, height);
                     const t = now * 0.001;
 
