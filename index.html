@@ -6,6 +6,7 @@
     <title>Breaking Bread</title>
     <!-- Оригинальный значок вкладки: румяный батон с паром -->
 <link rel="icon" type="image/png" href="img/svgviewer-png-output.png">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -171,6 +172,15 @@
                     <span class="text-xs text-stone-400">11 видов • Al Dente −1:30</span>
                 </div>
                 <div id="pastaCardsGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4"></div>
+            </section>
+
+            <!-- Раздел 3: Варка яиц и пашот -->
+            <section class="pt-4 border-t border-stone-200/90 space-y-3">
+                <div class="flex items-center justify-between px-0.5">
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-stone-500">Яйца</h2>
+                    <span class="text-xs text-stone-400">Стадии варки и пашот</span>
+                </div>
+                <div id="eggCardsGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4"></div>
             </section>
         </main>
 
@@ -373,6 +383,99 @@
 
         <!-- Слот для мини-игр на странице пасты -->
         <div id="pastaGameHost"></div>
+
+    </div>
+
+    <!-- ======================================================================
+         ОТДЕЛЬНАЯ СТРАНИЦА ВАРКИ ЯИЦ И ЯЙЦА ПАШОТ
+         ====================================================================== -->
+    <div id="eggView" class="hidden max-w-2xl mx-auto px-4 py-5 sm:py-8 space-y-5">
+
+        <!-- Верхняя панель с кнопкой Назад -->
+        <div class="flex items-center justify-between gap-3">
+            <button type="button" onclick="goBackHome()" class="inline-flex items-center gap-2 px-3.5 py-2 bg-white hover:bg-stone-50 active:bg-stone-100 border border-stone-300 rounded-xl text-sm font-semibold text-stone-800 shadow-2xs transition cursor-pointer">
+                <svg class="w-4 h-4 text-stone-600" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                </svg>
+                <span>Назад к блюдам</span>
+            </button>
+
+            <div class="flex items-center gap-2">
+                <span id="evTopTitle" class="text-sm font-bold text-stone-800">Варка яиц</span>
+                <span class="px-2 py-0.5 bg-neutral-900 text-white border border-neutral-800 rounded text-[11px] font-mono font-bold">EGG</span>
+            </div>
+        </div>
+
+        <!-- Основная карточка таймера и стадий яйца -->
+        <section class="bg-white border border-stone-300 rounded-2xl p-4 sm:p-6 shadow-sm space-y-5">
+            <div class="flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3.5 min-w-0">
+                    <img id="evImage" src="" alt="" class="w-16 h-16 sm:w-20 sm:h-20 rounded-xl object-cover border border-stone-200 bg-stone-100 shrink-0">
+                    <div class="min-w-0">
+                        <h1 id="evTitle" class="text-xl sm:text-2xl font-extrabold text-stone-900 leading-tight">Варка яиц</h1>
+                        <p id="evSubtitle" class="text-xs text-stone-500 mt-0.5">Закладывать в кипящую воду</p>
+                    </div>
+                </div>
+
+                <!-- Переключатель температуры яиц (показывается для варки в скорлупе) -->
+                <div id="evTempSwitch" class="inline-flex flex-col sm:flex-row p-1 bg-stone-100 border border-stone-200 rounded-xl text-xs shrink-0">
+                    <button type="button" id="evTemp-fridge" onclick="setEggTempMode('fridge')" class="px-2.5 py-1 rounded-lg font-semibold bg-white text-stone-900 shadow-2xs cursor-pointer transition">
+                        Холодильник
+                    </button>
+                    <button type="button" id="evTemp-room" onclick="setEggTempMode('room')" class="px-2.5 py-1 rounded-lg font-medium text-stone-600 hover:text-stone-900 cursor-pointer transition">
+                        Комнатная t°
+                    </button>
+                </div>
+            </div>
+
+            <!-- Сетка выбора стадий варки -->
+            <div id="evStagesGrid" class="grid grid-cols-2 gap-2.5"></div>
+
+            <!-- Блок таймера -->
+            <div class="p-4 bg-stone-900 text-white rounded-2xl space-y-3.5">
+                <div class="flex items-center justify-between gap-2">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span id="evActiveStageName" class="text-sm font-bold text-white">В мешочек</span>
+                            <span id="evActiveStageBadge" class="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 font-mono text-[11px] font-semibold">Из холодильника</span>
+                        </div>
+                        <p id="evActiveStageDesc" class="text-xs text-stone-400 mt-0.5">Текучий желток, плотный белок</p>
+                    </div>
+                    <div class="text-right shrink-0">
+                        <div id="evClock" class="font-mono text-3xl sm:text-4xl font-bold tracking-wider tabular-nums">07:00</div>
+                        <div id="evFinishAt" class="text-[11px] font-mono text-stone-400 mt-0.5">Будет готово в 12:00</div>
+                    </div>
+                </div>
+
+                <!-- Прогресс-полоса с отметками промежуточных стадий -->
+                <div class="relative pt-1">
+                    <div class="w-full h-2.5 bg-stone-800 rounded-full overflow-hidden">
+                        <div id="evProgressBar" class="h-full bg-amber-500 transition-all duration-200" style="width: 0%"></div>
+                    </div>
+                    <div id="evStageMarkers" class="relative h-4 mt-1 text-[10px] font-mono text-stone-400"></div>
+                </div>
+
+                <!-- Кнопки управления таймером -->
+                <div class="flex flex-wrap items-center gap-2">
+                    <button id="evStartBtn" type="button" onclick="toggleEggTimer()" class="flex-1 min-w-[120px] h-10 bg-amber-600 hover:bg-amber-500 text-white text-sm font-semibold rounded-xl transition cursor-pointer">
+                        Старт
+                    </button>
+                    <button type="button" onclick="resetEggTimer()" class="px-4 h-10 bg-stone-700 hover:bg-stone-600 text-white text-sm font-medium rounded-xl transition cursor-pointer">
+                        Сброс
+                    </button>
+                    <div class="inline-flex items-center gap-1 ml-auto">
+                        <button type="button" onclick="adjustEggSeconds(-15)" class="px-2.5 h-10 bg-stone-800 hover:bg-stone-700 border border-stone-700 rounded-xl font-mono text-xs font-semibold text-stone-200 cursor-pointer">−15с</button>
+                        <button type="button" onclick="adjustEggSeconds(15)" class="px-2.5 h-10 bg-stone-800 hover:bg-stone-700 border border-stone-700 rounded-xl font-mono text-xs font-semibold text-stone-200 cursor-pointer">+15с</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Инструкция / пошаговая техника (для варки или пашот) -->
+        <section id="evGuideSection" class="bg-white border border-stone-300 rounded-2xl p-4 sm:p-6 shadow-sm space-y-3"></section>
+
+        <!-- Слот для мини-игр на странице яиц -->
+        <div id="eggGameHost"></div>
 
     </div>
 
@@ -1073,6 +1176,104 @@
             { id: 'barilla_5', brand: 'BARILLA', num: 'n.5', name: 'Spaghetti', img: 'img/paste/Spaghetti.jpeg', altImg: 'img/paste/Spaghetti.jpg', mins: 9 }
         ];
 
+        /* ==========================================================================
+           2.1 БАЗА ДАННЫХ ДЛЯ ВАРКИ ЯИЦ И ЯЙЦА ПАШОТ
+           ========================================================================== */
+        const EGG_SVG_BOILED = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 180'%3E%3Crect width='240' height='180' fill='%23f5f5f4'/%3E%3Cellipse cx='120' cy='94' rx='46' ry='58' fill='%23ffffff' stroke='%23d6d3d1' stroke-width='3'/%3E%3Ccircle cx='120' cy='106' r='24' fill='%23f59e0b'/%3E%3Ccircle cx='113' cy='99' r='6' fill='%23fde68a' opacity='0.75'/%3E%3C/svg%3E";
+        const EGG_SVG_POACHED = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 180'%3E%3Crect width='240' height='180' fill='%23f5f5f4'/%3E%3Cpath d='M58 104c0-26 26-44 62-44s62 18 62 44c0 20-24 32-62 32s-62-12-62-32z' fill='%23ffffff' stroke='%23d6d3d1' stroke-width='3'/%3E%3Ccircle cx='120' cy='96' r='23' fill='%23f97316'/%3E%3Ccircle cx='113' cy='89' r='6' fill='%23fed7aa' opacity='0.8'/%3E%3C/svg%3E";
+
+        const EGG_CARDS = [
+            {
+                id: 'boiled',
+                title: 'Варка яиц',
+                subtitle: '4 стадии: всмятку, в мешочек, кремовый, вкрутую',
+                image: 'img/egg.jpg',
+                fallbackImage: EGG_SVG_BOILED,
+                badge: '4:30 – 10:30'
+            },
+            {
+                id: 'poached',
+                title: 'Яйцо пашот',
+                subtitle: 'Без скорлупы • Нежный белок и жидкий центр',
+                image: 'img/poached.jpg',
+                fallbackImage: EGG_SVG_POACHED,
+                badge: '2:30 – 3:30'
+            }
+        ];
+
+        const BOILED_EGG_STAGES = [
+            {
+                id: 'soft',
+                name: 'Всмятку',
+                desc: 'Жидкий тёплый желток, нежный едва схватившийся белок',
+                fridgeSec: 330, // 5:30
+                roomSec: 270,   // 4:30
+                yolkColor: '#f97316',
+                yolkCore: '#fb923c'
+            },
+            {
+                id: 'jammy',
+                name: 'В мешочек',
+                desc: 'Текучий золотистый желток, полностью плотный белок',
+                fridgeSec: 420, // 7:00
+                roomSec: 360,   // 6:00
+                yolkColor: '#f59e0b',
+                yolkCore: '#fbbf24'
+            },
+            {
+                id: 'ramen',
+                name: 'Кремовый (рамен)',
+                desc: 'Густой тягучий желток, идеальный для тостов и салатов',
+                fridgeSec: 510, // 8:30
+                roomSec: 450,   // 7:30
+                yolkColor: '#eab308',
+                yolkCore: '#facc15'
+            },
+            {
+                id: 'hard',
+                name: 'Вкрутую',
+                desc: 'Плотный желток без серого ободка, легко режется',
+                fridgeSec: 630, // 10:30
+                roomSec: 570,   // 9:30
+                yolkColor: '#fde047',
+                yolkCore: '#fef08a'
+            }
+        ];
+
+        const POACHED_EGG_STAGES = [
+            {
+                id: 'runny',
+                name: 'Классический пашот',
+                desc: 'Полностью жидкий центр, шелковистый белок',
+                sec: 150, // 2:30
+                yolkColor: '#f97316',
+                yolkCore: '#fb923c'
+            },
+            {
+                id: 'medium',
+                name: 'Средний пашот',
+                desc: 'Густой желток по краям и жидкий в самой середине',
+                sec: 180, // 3:00
+                yolkColor: '#f59e0b',
+                yolkCore: '#fbbf24'
+            },
+            {
+                id: 'firm',
+                name: 'Плотный пашот',
+                desc: 'Схватившийся кремовый желток, удобно брать с собой',
+                sec: 210, // 3:30
+                yolkColor: '#eab308',
+                yolkCore: '#facc15'
+            }
+        ];
+
+        const POACHED_TECHNIQUE_STEPS = [
+            'Разбить свежее яйцо в мелкое сито на 15 сек, чтобы стек водянистый край белка, затем переложить в пиалу.',
+            'Нагреть воду (слоем 7–8 см) до мелких пузырьков со дна (~85–90 °C) без активного бурления.',
+            'Закрутить ложкой спокойную воронку, опустить яйцо из пиалы у самой воды в центр и включить таймер.',
+            'Достать шумовкой и промокнуть на бумажном полотенце 5 секунд перед подачей.'
+        ];
+
         const FERMENT_PRESETS = {
             warm: [
                 { label: '45 мин', mins: 45 },
@@ -1095,9 +1296,14 @@
         /* ==========================================================================
            3. СОСТОЯНИЕ ПРИЛОЖЕНИЯ И БЕЗОПАСНОЕ СОХРАНЕНИЕ
            ========================================================================== */
-        let currentView = 'home'; // 'home' | 'recipe' | 'pasta'
+        let currentView = 'home'; // 'home' | 'recipe' | 'pasta' | 'egg'
         let currentRecipeKey = 'bread';
         let currentPastaId = 'rummo_42';
+        let currentEggId = 'boiled';
+        let eggTempMode = 'fridge'; // 'fridge' | 'room'
+        let eggBoiledStage = 'jammy';
+        let eggPoachedStage = 'runny';
+        const poachedStepsDone = {};
         let currentScale = 1;
         let yeastType = 'dry';
         let optionalEnabled = {};
@@ -1112,6 +1318,7 @@
 
         const timers = {};
         const pastaTimers = {};
+        const eggTimers = {};
         let timerToStageIndex = {};
 
         const STORAGE_KEY = 'breakingBreadState_v3';
@@ -1135,6 +1342,11 @@
                 currentView,
                 currentRecipeKey,
                 currentPastaId,
+                currentEggId,
+                eggTempMode,
+                eggBoiledStage,
+                eggPoachedStage,
+                poachedStepsDone,
                 savedRecipeParams,
                 fermentModeByRecipe,
                 completedSteps,
@@ -1144,7 +1356,8 @@
                 pizzaBallsCount,
                 bunsSplitCount,
                 timers: {},
-                pastaTimers: {}
+                pastaTimers: {},
+                eggTimers: {}
             };
 
             const now = Date.now();
@@ -1171,6 +1384,16 @@
                 };
             }
 
+            for (const [id, et] of Object.entries(eggTimers)) {
+                state.eggTimers[id] = {
+                    defaultSec: et.defaultSec,
+                    remainingSec: et.running && et.endTimestamp ? Math.max(0, (et.endTimestamp - now) / 1000) : et.remainingSec,
+                    running: et.running,
+                    endTimestamp: et.endTimestamp,
+                    stageName: et.stageName
+                };
+            }
+
             safeStorageSet(STORAGE_KEY, JSON.stringify(state));
         }
 
@@ -1183,7 +1406,12 @@
                 if (parsed.currentView) currentView = parsed.currentView;
                 if (parsed.currentRecipeKey && RECIPES[parsed.currentRecipeKey]) currentRecipeKey = parsed.currentRecipeKey;
                 if (parsed.currentPastaId && PASTAS.some(p => p.id === parsed.currentPastaId)) currentPastaId = parsed.currentPastaId;
+                if (parsed.currentEggId && EGG_CARDS.some(e => e.id === parsed.currentEggId)) currentEggId = parsed.currentEggId;
+                if (parsed.eggTempMode === 'fridge' || parsed.eggTempMode === 'room') eggTempMode = parsed.eggTempMode;
+                if (parsed.eggBoiledStage && BOILED_EGG_STAGES.some(s => s.id === parsed.eggBoiledStage)) eggBoiledStage = parsed.eggBoiledStage;
+                if (parsed.eggPoachedStage && POACHED_EGG_STAGES.some(s => s.id === parsed.eggPoachedStage)) eggPoachedStage = parsed.eggPoachedStage;
 
+                Object.assign(poachedStepsDone, parsed.poachedStepsDone || {});
                 Object.assign(savedRecipeParams, parsed.savedRecipeParams || {});
                 Object.assign(fermentModeByRecipe, parsed.fermentModeByRecipe || {});
                 Object.assign(completedSteps, parsed.completedSteps || {});
@@ -1215,6 +1443,16 @@
                         if (pt.running && pt.endTimestamp) {
                             const remain = (pt.endTimestamp - now) / 1000;
                             pastaTimers[id].remainingSec = remain <= 0 ? 0 : remain;
+                        }
+                    }
+                }
+
+                if (parsed.eggTimers) {
+                    for (const [id, et] of Object.entries(parsed.eggTimers)) {
+                        eggTimers[id] = { ...et };
+                        if (et.running && et.endTimestamp) {
+                            const remain = (et.endTimestamp - now) / 1000;
+                            eggTimers[id].remainingSec = remain <= 0 ? 0 : remain;
                         }
                     }
                 }
@@ -1254,6 +1492,38 @@
                 };
             }
             return pastaTimers[pastaId];
+        }
+
+        function getEggStageTargetSec(eggId) {
+            if (eggId === 'poached') {
+                const st = POACHED_EGG_STAGES.find(s => s.id === eggPoachedStage) || POACHED_EGG_STAGES[0];
+                return st.sec;
+            }
+            const st = BOILED_EGG_STAGES.find(s => s.id === eggBoiledStage) || BOILED_EGG_STAGES[1];
+            return eggTempMode === 'room' ? st.roomSec : st.fridgeSec;
+        }
+
+        function getEggStageLabel(eggId) {
+            if (eggId === 'poached') {
+                const st = POACHED_EGG_STAGES.find(s => s.id === eggPoachedStage) || POACHED_EGG_STAGES[0];
+                return st.name;
+            }
+            const st = BOILED_EGG_STAGES.find(s => s.id === eggBoiledStage) || BOILED_EGG_STAGES[1];
+            return st.name;
+        }
+
+        function ensureEggTimer(eggId) {
+            if (!eggTimers[eggId]) {
+                const targetSec = getEggStageTargetSec(eggId);
+                eggTimers[eggId] = {
+                    defaultSec: targetSec,
+                    remainingSec: targetSec,
+                    running: false,
+                    endTimestamp: null,
+                    stageName: getEggStageLabel(eggId)
+                };
+            }
+            return eggTimers[eggId];
         }
 
         function replayLogoAnimation() {
@@ -1894,6 +2164,7 @@
             if (currentView === 'home') {
                 renderRecipeCards();
                 renderPastaCards();
+                renderEggCards();
                 renderHomeActiveTimers();
             }
         }
@@ -2091,7 +2362,312 @@
         }
 
         /* ==========================================================================
-           8. ГЛОБАЛЬНЫЙ ТИК ВСЕХ ТАЙМЕРОВ (ВЫПЕЧКА + ПАСТА)
+           7.1 УПРАВЛЕНИЕ ВАРКОЙ ЯИЦ И ЯЙЦОМ ПАШОТ
+           ========================================================================== */
+        function buildEggStageIconSvg(stage, isPoached) {
+            if (isPoached) {
+                return `
+                    <svg viewBox="0 0 44 44" class="w-9 h-9 shrink-0">
+                        <path d="M7 25c0-8 7-13 15-13s15 5 15 13c0 6-6 10-15 10S7 31 7 25z" fill="#ffffff" stroke="#d6d3d1" stroke-width="1.8"/>
+                        <circle cx="22" cy="23" r="7.5" fill="${stage.yolkColor}"/>
+                        <circle cx="19.5" cy="20.5" r="2.2" fill="${stage.yolkCore}"/>
+                    </svg>
+                `;
+            }
+            return `
+                <svg viewBox="0 0 44 44" class="w-9 h-9 shrink-0">
+                    <ellipse cx="22" cy="22" rx="13" ry="16.5" fill="#ffffff" stroke="#d6d3d1" stroke-width="1.8"/>
+                    <circle cx="22" cy="25.5" r="7.2" fill="${stage.yolkColor}"/>
+                    <circle cx="19.8" cy="23.2" r="2.1" fill="${stage.yolkCore}"/>
+                </svg>
+            `;
+        }
+
+        function applyNewEggTargetDuration(eggId, nextSec, stageName) {
+            const et = ensureEggTimer(eggId);
+            et.stageName = stageName;
+            if (et.running && et.endTimestamp) {
+                const elapsed = Math.max(0, et.defaultSec - et.remainingSec);
+                et.defaultSec = nextSec;
+                et.remainingSec = Math.max(1, nextSec - elapsed);
+                et.endTimestamp = Date.now() + et.remainingSec * 1000;
+            } else {
+                et.defaultSec = nextSec;
+                et.remainingSec = nextSec;
+                et.running = false;
+                et.endTimestamp = null;
+            }
+        }
+
+        function selectBoiledStage(stageId) {
+            const st = BOILED_EGG_STAGES.find(s => s.id === stageId);
+            if (!st) return;
+            eggBoiledStage = stageId;
+            const nextSec = eggTempMode === 'room' ? st.roomSec : st.fridgeSec;
+            applyNewEggTargetDuration('boiled', nextSec, st.name);
+            renderEggView();
+            saveGlobalState();
+        }
+
+        function setEggTempMode(mode) {
+            if (eggTempMode === mode) return;
+            eggTempMode = mode;
+            const st = BOILED_EGG_STAGES.find(s => s.id === eggBoiledStage) || BOILED_EGG_STAGES[1];
+            const nextSec = mode === 'room' ? st.roomSec : st.fridgeSec;
+            applyNewEggTargetDuration('boiled', nextSec, st.name);
+            renderEggView();
+            saveGlobalState();
+        }
+
+        function selectPoachedStage(stageId) {
+            const st = POACHED_EGG_STAGES.find(s => s.id === stageId);
+            if (!st) return;
+            eggPoachedStage = stageId;
+            applyNewEggTargetDuration('poached', st.sec, st.name);
+            renderEggView();
+            saveGlobalState();
+        }
+
+        function togglePoachedStep(idx, checked) {
+            poachedStepsDone[idx] = checked;
+            renderEggView();
+            saveGlobalState();
+        }
+
+        function toggleEggTimer() {
+            unlockAudio();
+            const et = ensureEggTimer(currentEggId);
+            if (!et) return;
+
+            if (et.running) {
+                et.remainingSec = Math.max(0, (et.endTimestamp - Date.now()) / 1000);
+                et.running = false;
+                et.endTimestamp = null;
+            } else {
+                if (et.remainingSec <= 0) {
+                    et.remainingSec = et.defaultSec;
+                }
+                et.endTimestamp = Date.now() + et.remainingSec * 1000;
+                et.running = true;
+            }
+            renderEggTimer();
+            saveGlobalState();
+        }
+
+        function resetEggTimer() {
+            const et = ensureEggTimer(currentEggId);
+            if (!et) return;
+            const targetSec = getEggStageTargetSec(currentEggId);
+            et.running = false;
+            et.endTimestamp = null;
+            et.defaultSec = targetSec;
+            et.remainingSec = targetSec;
+            et.stageName = getEggStageLabel(currentEggId);
+            renderEggTimer();
+            saveGlobalState();
+        }
+
+        function adjustEggSeconds(deltaSec) {
+            const et = ensureEggTimer(currentEggId);
+            if (!et) return;
+            const nextDefault = Math.max(30, Math.min(1800, et.defaultSec + deltaSec));
+            if (et.running && et.endTimestamp) {
+                et.defaultSec = nextDefault;
+                et.remainingSec = Math.max(1, et.remainingSec + deltaSec);
+                et.endTimestamp = Date.now() + et.remainingSec * 1000;
+            } else {
+                et.defaultSec = nextDefault;
+                et.remainingSec = nextDefault;
+            }
+            renderEggTimer();
+            saveGlobalState();
+        }
+
+        function renderEggView() {
+            const isPoached = currentEggId === 'poached';
+            const cardInfo = EGG_CARDS.find(c => c.id === currentEggId) || EGG_CARDS[0];
+
+            document.getElementById('evTopTitle').textContent = cardInfo.title;
+            document.getElementById('evTitle').textContent = cardInfo.title;
+            document.getElementById('evSubtitle').textContent = isPoached
+                ? 'Вода 85–90 °C без бурления • Без скорлупы'
+                : 'Опускать ложкой в уже кипящую воду';
+
+            const imgEl = document.getElementById('evImage');
+            imgEl.onerror = function() {
+                this.onerror = null;
+                this.src = cardInfo.fallbackImage;
+            };
+            imgEl.src = cardInfo.image;
+            imgEl.alt = cardInfo.title;
+
+            // Переключатель температуры только для варки яиц в скорлупе
+            const tempSwitch = document.getElementById('evTempSwitch');
+            if (isPoached) {
+                tempSwitch.classList.add('hidden');
+            } else {
+                tempSwitch.classList.remove('hidden');
+                const btnFridge = document.getElementById('evTemp-fridge');
+                const btnRoom = document.getElementById('evTemp-room');
+                btnFridge.className = eggTempMode === 'fridge'
+                    ? 'px-2.5 py-1 rounded-lg font-semibold bg-white text-stone-900 shadow-2xs cursor-pointer transition'
+                    : 'px-2.5 py-1 rounded-lg font-medium text-stone-600 hover:text-stone-900 cursor-pointer transition';
+                btnRoom.className = eggTempMode === 'room'
+                    ? 'px-2.5 py-1 rounded-lg font-semibold bg-white text-stone-900 shadow-2xs cursor-pointer transition'
+                    : 'px-2.5 py-1 rounded-lg font-medium text-stone-600 hover:text-stone-900 cursor-pointer transition';
+            }
+
+            // Карточки выбора стадий
+            const stagesGrid = document.getElementById('evStagesGrid');
+            if (isPoached) {
+                stagesGrid.className = 'grid grid-cols-1 sm:grid-cols-3 gap-2.5';
+                stagesGrid.innerHTML = POACHED_EGG_STAGES.map(st => {
+                    const isSelected = st.id === eggPoachedStage;
+                    return `
+                        <button type="button" onclick="selectPoachedStage('${st.id}')" class="text-left p-3 rounded-xl border transition cursor-pointer flex sm:flex-col items-center sm:items-start gap-3 sm:gap-2 ${isSelected ? 'border-2 border-neutral-900 bg-stone-50 shadow-2xs' : 'border-stone-200 bg-white hover:border-stone-400'}">
+                            <div class="flex items-center justify-between w-full gap-2">
+                                ${buildEggStageIconSvg(st, true)}
+                                <span class="font-mono text-sm font-bold px-2 py-0.5 rounded-md ${isSelected ? 'bg-neutral-900 text-white' : 'bg-stone-100 text-stone-800'}">${formatTime(st.sec, false)}</span>
+                            </div>
+                            <div class="min-w-0">
+                                <div class="font-bold text-xs sm:text-sm text-stone-900">${st.name}</div>
+                                <div class="text-[11px] text-stone-500 leading-snug mt-0.5">${st.desc}</div>
+                            </div>
+                        </button>
+                    `;
+                }).join('');
+            } else {
+                stagesGrid.className = 'grid grid-cols-2 gap-2.5';
+                stagesGrid.innerHTML = BOILED_EGG_STAGES.map(st => {
+                    const isSelected = st.id === eggBoiledStage;
+                    const sec = eggTempMode === 'room' ? st.roomSec : st.fridgeSec;
+                    return `
+                        <button type="button" onclick="selectBoiledStage('${st.id}')" class="text-left p-3 rounded-xl border transition cursor-pointer space-y-2 ${isSelected ? 'border-2 border-neutral-900 bg-stone-50 shadow-2xs' : 'border-stone-200 bg-white hover:border-stone-400'}">
+                            <div class="flex items-center justify-between gap-2">
+                                ${buildEggStageIconSvg(st, false)}
+                                <span class="font-mono text-sm font-bold px-2 py-0.5 rounded-md ${isSelected ? 'bg-neutral-900 text-white' : 'bg-stone-100 text-stone-800'}">${formatTime(sec, false)}</span>
+                            </div>
+                            <div>
+                                <div class="font-bold text-xs sm:text-sm text-stone-900">${st.name}</div>
+                                <div class="text-[11px] text-stone-500 leading-snug mt-0.5">${st.desc}</div>
+                            </div>
+                        </button>
+                    `;
+                }).join('');
+            }
+
+            // Нижний блок инструкции / пошагового чек-листа
+            const guideSection = document.getElementById('evGuideSection');
+            if (isPoached) {
+                const stepsHtml = POACHED_TECHNIQUE_STEPS.map((text, idx) => {
+                    const done = Boolean(poachedStepsDone[idx]);
+                    return `
+                        <label class="flex items-start gap-3 p-3 rounded-xl border transition cursor-pointer select-none ${done ? 'bg-stone-100/70 border-stone-200 text-stone-400' : 'bg-white border-stone-200 hover:border-stone-300 text-stone-800'}">
+                            <input type="checkbox" ${done ? 'checked' : ''} onchange="togglePoachedStep(${idx}, this.checked)" class="mt-0.5 w-4 h-4 rounded accent-emerald-600 cursor-pointer shrink-0">
+                            <span class="text-xs sm:text-[13px] leading-relaxed ${done ? 'line-through' : ''}">
+                                <strong class="font-mono mr-1">${idx + 1}.</strong>${text}
+                            </span>
+                        </label>
+                    `;
+                }).join('');
+
+                guideSection.innerHTML = `
+                    <div class="flex items-center justify-between gap-2">
+                        <h2 class="text-base font-bold text-stone-900">Техника пашот без «лохмотьев»</h2>
+                        <span class="text-xs text-stone-500">Пошагово</span>
+                    </div>
+                    <div class="space-y-2">${stepsHtml}</div>
+                `;
+            } else {
+                guideSection.innerHTML = `
+                    <h2 class="text-base font-bold text-stone-900">Памятка для идеальной варки</h2>
+                    <ul class="space-y-2.5 text-xs sm:text-[13px] text-stone-700 leading-relaxed">
+                        <li class="flex items-start gap-2.5">
+                            <span class="w-5 h-5 rounded-full bg-stone-200 text-stone-800 font-mono text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">1</span>
+                            <span>Доведите воду до кипения, убавьте огонь до спокойного и опустите яйца столовой ложкой — так белок не прилипнет к скорлупе.</span>
+                        </li>
+                        <li class="flex items-start gap-2.5">
+                            <span class="w-5 h-5 rounded-full bg-stone-200 text-stone-800 font-mono text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">2</span>
+                            <span>Если варите сразу несколько яиц разной прожарки, ставьте самую долгую стадию и доставайте более мягкие по отметкам на шкале.</span>
+                        </li>
+                        <li class="flex items-start gap-2.5">
+                            <span class="w-5 h-5 rounded-full bg-stone-200 text-stone-800 font-mono text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">3</span>
+                            <span>Сразу после сигнала переложите яйца в холодную воду со льдом на 3–5 мин, чтобы остановить нагрев желтка и легко очистить скорлупу.</span>
+                        </li>
+                    </ul>
+                `;
+            }
+
+            renderEggTimer();
+        }
+
+        function renderEggTimer() {
+            const isPoached = currentEggId === 'poached';
+            const et = ensureEggTimer(currentEggId);
+            if (!et) return;
+
+            const activeStage = isPoached
+                ? (POACHED_EGG_STAGES.find(s => s.id === eggPoachedStage) || POACHED_EGG_STAGES[0])
+                : (BOILED_EGG_STAGES.find(s => s.id === eggBoiledStage) || BOILED_EGG_STAGES[1]);
+
+            document.getElementById('evActiveStageName').textContent = activeStage.name;
+            document.getElementById('evActiveStageDesc').textContent = activeStage.desc;
+
+            const badgeEl = document.getElementById('evActiveStageBadge');
+            if (isPoached) {
+                badgeEl.textContent = 'Без скорлупы';
+            } else {
+                badgeEl.textContent = eggTempMode === 'room' ? 'Комнатная t°' : 'Из холодильника';
+            }
+
+            document.getElementById('evClock').textContent = formatTime(et.remainingSec, false);
+
+            const finishEl = document.getElementById('evFinishAt');
+            const startBtn = document.getElementById('evStartBtn');
+            if (et.running && et.endTimestamp) {
+                startBtn.textContent = 'Пауза';
+                startBtn.classList.replace('bg-amber-600', 'bg-stone-600');
+                startBtn.classList.replace('hover:bg-amber-500', 'hover:bg-stone-500');
+                finishEl.textContent = `Готово ${formatClock(et.endTimestamp)}`;
+            } else {
+                startBtn.textContent = (et.remainingSec < et.defaultSec && et.remainingSec > 0) ? 'Дальше' : 'Старт';
+                startBtn.classList.replace('bg-stone-600', 'bg-amber-600');
+                startBtn.classList.replace('hover:bg-stone-500', 'hover:bg-amber-500');
+                finishEl.textContent = et.remainingSec > 0
+                    ? `Будет готово ${formatClock(Date.now() + et.remainingSec * 1000)}`
+                    : 'Готово!';
+            }
+
+            // Прогресс и отметки промежуточных стадий
+            const elapsed = Math.max(0, et.defaultSec - et.remainingSec);
+            const pct = et.defaultSec > 0 ? Math.min(100, (elapsed / et.defaultSec) * 100) : 0;
+            const barEl = document.getElementById('evProgressBar');
+            barEl.style.width = `${pct}%`;
+            barEl.className = et.remainingSec <= 0
+                ? 'h-full bg-emerald-500 transition-all duration-200'
+                : 'h-full bg-amber-500 transition-all duration-200';
+
+            const markersEl = document.getElementById('evStageMarkers');
+            if (!isPoached && et.defaultSec > 0) {
+                const markersHtml = BOILED_EGG_STAGES
+                    .map(st => {
+                        const sec = eggTempMode === 'room' ? st.roomSec : st.fridgeSec;
+                        return { name: st.name, sec };
+                    })
+                    .filter(m => m.sec < et.defaultSec)
+                    .map(m => {
+                        const leftPct = Math.round((m.sec / et.defaultSec) * 100);
+                        return `<span style="left: ${leftPct}%" class="absolute -translate-x-1/2 whitespace-nowrap">| ${m.name} (${formatTime(m.sec, false)})</span>`;
+                    })
+                    .join('');
+                markersEl.innerHTML = markersHtml;
+            } else {
+                markersEl.innerHTML = '';
+            }
+        }
+
+        /* ==========================================================================
+           8. ГЛОБАЛЬНЫЙ ТИК ВСЕХ ТАЙМЕРОВ (ВЫПЕЧКА + ПАСТА + ЯЙЦА)
            ========================================================================== */
         setInterval(() => {
             const now = Date.now();
@@ -2166,6 +2742,33 @@
                     }
                 }
             });
+
+            // 3. Таймеры яиц (варка и пашот)
+            Object.keys(eggTimers).forEach(eggId => {
+                const et = eggTimers[eggId];
+                if (et.running && et.endTimestamp) {
+                    et.remainingSec = (et.endTimestamp - now) / 1000;
+                    const cardInfo = EGG_CARDS.find(c => c.id === eggId);
+
+                    if (et.remainingSec <= 0) {
+                        et.remainingSec = 0;
+                        et.running = false;
+                        et.endTimestamp = null;
+                        triggerAlarm(`${cardInfo ? cardInfo.title : 'Яйца'} (${et.stageName || ''}): готово!`);
+                        saveGlobalState();
+                    }
+
+                    if (currentView === 'egg' && currentEggId === eggId) {
+                        renderEggTimer();
+                    } else if (currentView === 'home') {
+                        const timeStr = formatTime(et.remainingSec, false);
+                        const homeEggBadge = document.getElementById(`home-egg-timer-${eggId}`);
+                        if (homeEggBadge) homeEggBadge.textContent = timeStr;
+                        const cardEggBadge = document.getElementById(`egg-card-timer-${eggId}`);
+                        if (cardEggBadge) cardEggBadge.textContent = timeStr;
+                    }
+                }
+            });
         }, 250);
 
         /* ==========================================================================
@@ -2210,6 +2813,7 @@
 
             document.getElementById('homeView').classList.add('hidden');
             document.getElementById('pastaView').classList.add('hidden');
+            document.getElementById('eggView').classList.add('hidden');
             document.getElementById('recipeView').classList.remove('hidden');
             updateRecipeHeader(recipeKey);
 
@@ -2248,6 +2852,7 @@
 
             document.getElementById('homeView').classList.add('hidden');
             document.getElementById('recipeView').classList.add('hidden');
+            document.getElementById('eggView').classList.add('hidden');
             document.getElementById('pastaView').classList.remove('hidden');
 
             const imgEl = document.getElementById('pvImage');
@@ -2274,6 +2879,27 @@
             saveGlobalState();
         }
 
+        function openEgg(eggId) {
+            const cardInfo = EGG_CARDS.find(c => c.id === eggId);
+            if (!cardInfo) return;
+            if (currentView === 'recipe') {
+                saveCurrentRecipeState();
+            }
+            currentEggId = eggId;
+            currentView = 'egg';
+            ensureEggTimer(eggId);
+
+            document.getElementById('homeView').classList.add('hidden');
+            document.getElementById('recipeView').classList.add('hidden');
+            document.getElementById('pastaView').classList.add('hidden');
+            document.getElementById('eggView').classList.remove('hidden');
+
+            renderEggView();
+            mountMiniGamesTo('eggGameHost');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            saveGlobalState();
+        }
+
         function goBackHome() {
             if (currentView === 'recipe') {
                 saveCurrentRecipeState();
@@ -2287,10 +2913,12 @@
 
             document.getElementById('recipeView').classList.add('hidden');
             document.getElementById('pastaView').classList.add('hidden');
+            document.getElementById('eggView').classList.add('hidden');
             document.getElementById('homeView').classList.remove('hidden');
 
             renderRecipeCards();
             renderPastaCards();
+            renderEggCards();
             renderHomeActiveTimers();
             saveGlobalState();
         }
@@ -2341,7 +2969,27 @@
                     `;
                 });
 
-            const allHtml = [...recipeTimersHtml, ...pastaTimersHtml];
+            const eggTimersHtml = Object.entries(eggTimers)
+                .filter(([, et]) => et.running)
+                .map(([eggId, et]) => {
+                    const cardInfo = EGG_CARDS.find(c => c.id === eggId);
+                    const eggName = cardInfo ? cardInfo.title : 'Яйца';
+                    const timeStr = formatTime(et.remainingSec, false);
+                    return `
+                        <button type="button" onclick="openEgg('${eggId}')" class="w-full flex items-center justify-between gap-3 px-4 py-2.5 bg-neutral-900 hover:bg-neutral-800 text-white rounded-xl shadow-sm transition cursor-pointer text-left">
+                            <div class="flex items-center gap-2.5 min-w-0">
+                                <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping shrink-0"></span>
+                                <div class="truncate">
+                                    <span class="text-xs font-bold">${eggName}</span>
+                                    <span class="text-xs text-neutral-400 ml-1.5">${et.stageName || ''}</span>
+                                </div>
+                            </div>
+                            <span id="home-egg-timer-${eggId}" class="font-mono text-sm font-bold text-amber-400 tabular-nums shrink-0">${timeStr}</span>
+                        </button>
+                    `;
+                });
+
+            const allHtml = [...recipeTimersHtml, ...pastaTimersHtml, ...eggTimersHtml];
             if (allHtml.length === 0) {
                 container.classList.add('hidden');
                 container.innerHTML = '';
@@ -2414,6 +3062,39 @@
                                 <span class="text-red-600">${p.brand}</span>
                                 <span class="text-stone-800 ml-1">${p.num}</span>
                             </div>
+                        </div>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function renderEggCards() {
+            const grid = document.getElementById('eggCardsGrid');
+            if (!grid) return;
+
+            grid.innerHTML = EGG_CARDS.map(egg => {
+                const et = eggTimers[egg.id];
+                const isRunning = et && et.running;
+
+                const timerBadgeHtml = isRunning
+                    ? `<div class="absolute top-2.5 right-2.5 px-2 py-1 bg-neutral-900/90 text-amber-400 font-mono text-xs font-bold rounded-lg flex items-center gap-1.5 shadow">
+                           <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span>
+                           <span id="egg-card-timer-${egg.id}">${formatTime(et.remainingSec, false)}</span>
+                       </div>`
+                    : `<div class="absolute bottom-2 right-2 px-2 py-0.5 bg-white/90 border border-stone-200 text-stone-800 font-mono text-[11px] font-bold rounded-md">
+                           ${egg.badge}
+                       </div>`;
+
+                return `
+                    <button type="button" onclick="openEgg('${egg.id}')" class="group text-left bg-white border border-stone-300 hover:border-neutral-900 rounded-2xl overflow-hidden shadow-2xs hover:shadow-md transition flex flex-col cursor-pointer">
+                        <div class="relative w-full aspect-[4/3] bg-stone-100 overflow-hidden border-b border-stone-100">
+                            <img src="${egg.image}" alt="${egg.title}" loading="lazy"
+                                 onerror="this.onerror=null;this.src='${egg.fallbackImage}';"
+                                 class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                            ${timerBadgeHtml}
+                        </div>
+                        <div class="p-3 sm:p-3.5">
+                            <div class="font-bold text-sm sm:text-base text-stone-900 group-hover:text-black">${egg.title}</div>
                         </div>
                     </button>
                 `;
@@ -3161,6 +3842,7 @@
             if (currentView === 'recipe' && RECIPES[currentRecipeKey]) {
                 document.getElementById('homeView').classList.add('hidden');
                 document.getElementById('pastaView').classList.add('hidden');
+                document.getElementById('eggView').classList.add('hidden');
                 document.getElementById('recipeView').classList.remove('hidden');
                 updateRecipeHeader(currentRecipeKey);
 
@@ -3170,15 +3852,19 @@
                 mountMiniGamesTo('recipeGameHost');
             } else if (currentView === 'pasta' && PASTAS.some(p => p.id === currentPastaId)) {
                 openPasta(currentPastaId);
+            } else if (currentView === 'egg' && EGG_CARDS.some(e => e.id === currentEggId)) {
+                openEgg(currentEggId);
             } else {
                 currentView = 'home';
                 renderRecipeCards();
                 renderPastaCards();
+                renderEggCards();
                 renderHomeActiveTimers();
             }
         } else {
             renderRecipeCards();
             renderPastaCards();
+            renderEggCards();
             renderHomeActiveTimers();
         }
     </script>
