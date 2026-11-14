@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Breaking Bread</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='4' y='4' width='56' height='56' rx='12' fill='%23144528' stroke='%23e7e5e4' stroke-width='3.5'/%3E%3Ctext x='52' y='18' text-anchor='end' fill='%23d6d3d1' font-family='monospace' font-size='11' font-weight='bold'%3E35%3C/text%3E%3Ctext x='32' y='44' text-anchor='middle' fill='%23ffffff' font-family='sans-serif' font-size='28' font-weight='800'%3EBr%3C/text%3E%3C/svg%3E">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='4' y='4' width='56' height='56' rx='12' fill='%23111111' stroke='%23ffffff' stroke-width='3.5'/%3E%3Ctext x='52' y='18' text-anchor='end' fill='%23a3a3a3' font-family='monospace' font-size='11' font-weight='bold'%3E35%3C/text%3E%3Ctext x='32' y='44' text-anchor='middle' fill='%23ffffff' font-family='sans-serif' font-size='28' font-weight='800'%3EBr%3C/text%3E%3C/svg%3E">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -34,22 +34,19 @@
             font-variant-numeric: tabular-nums;
         }
 
-        /* Анимация в стиле Breaking Bad */
+        /* Монохромная анимация логотипа Breaking Bread */
         @keyframes bbTileDrop {
             0% {
                 opacity: 0;
-                transform: scale(1.22) translateY(-8px);
-                filter: brightness(1.5);
+                transform: scale(1.18) translateY(-8px);
             }
             65% {
                 opacity: 1;
                 transform: scale(0.98) translateY(0);
-                filter: brightness(1.1);
             }
             100% {
                 opacity: 1;
                 transform: scale(1) translateY(0);
-                filter: brightness(1);
             }
         }
         @keyframes bbWordReveal {
@@ -61,38 +58,44 @@
             100% {
                 opacity: 1;
                 transform: translateX(0);
-                letter-spacing: -0.02em;
+                letter-spacing: -0.025em;
             }
         }
-        @keyframes bbVaporFloat {
-            0% {
-                opacity: 0;
-                transform: translateY(6px) scale(0.9);
+        @keyframes bbTileSheen {
+            0%, 72%, 100% {
+                transform: translateX(-140%) skewX(-20deg);
             }
-            50% {
-                opacity: 0.45;
-            }
-            100% {
-                opacity: 0;
-                transform: translateY(-16px) scale(1.15);
+            88% {
+                transform: translateX(220%) skewX(-20deg);
             }
         }
         .bb-tile {
-            background: linear-gradient(145deg, #1f633b 0%, #113b22 60%, #092414 100%);
-            box-shadow: 0 8px 22px -6px rgba(17, 59, 34, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+            position: relative;
+            overflow: hidden;
+            background-color: #111111;
+            box-shadow: 0 10px 24px -10px rgba(0, 0, 0, 0.35);
             animation: bbTileDrop 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+        .bb-tile::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            width: 55%;
+            background-color: rgba(255, 255, 255, 0.14);
+            animation: bbTileSheen 6.5s ease-in-out infinite;
+            pointer-events: none;
         }
         .bb-tile-delay {
             animation-delay: 0.16s;
+        }
+        .bb-tile-delay::after {
+            animation-delay: 0.35s;
         }
         .bb-word {
             animation: bbWordReveal 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.12s both;
         }
         .bb-word-delay {
             animation: bbWordReveal 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.28s both;
-        }
-        .bb-vapor {
-            animation: bbVaporFloat 3.4s ease-in-out infinite;
         }
     </style>
 </head>
@@ -111,59 +114,58 @@
         </div>
     </div>
 
-    <!-- ГЛАВНЫЙ ЭКРАН: АНИМАЦИЯ BREAKING BREAD + КАРТОЧКИ БЛЮД -->
-    <main id="homeView" class="max-w-3xl mx-auto px-4 py-5 sm:py-8 space-y-6">
+    <!-- ГЛАВНЫЙ ЭКРАН: ПРОЗРАЧНАЯ ШАПКА НА ВСЮ ШИРИНУ + КАРТОЧКИ БЛЮД -->
+    <div id="homeView" class="min-h-screen">
 
-        <!-- Шапка с отсылкой на Breaking Bad (клик перезапускает анимацию) -->
-        <header onclick="replayLogoAnimation()" title="Нажмите, чтобы повторить анимацию" class="relative overflow-hidden bg-stone-900 border border-stone-800 rounded-2xl px-5 py-6 sm:px-8 sm:py-7 shadow-md cursor-pointer select-none">
-            <!-- Лёгкий дымок / пар на фоне -->
-            <div class="pointer-events-none absolute inset-0 overflow-hidden">
-                <div class="bb-vapor absolute left-1/4 bottom-2 w-24 h-24 rounded-full bg-emerald-500/15 blur-2xl"></div>
-                <div class="bb-vapor absolute right-1/4 top-3 w-28 h-28 rounded-full bg-amber-400/10 blur-2xl" style="animation-delay: 1.5s;"></div>
-            </div>
+        <!-- Полноширинная прозрачная шапка без рамки и градиента в стиле ч/б -->
+        <header id="heroHeader" onclick="handleHeaderClick(event)" title="Нажмите, чтобы повторить анимацию" class="relative w-full overflow-hidden bg-transparent pt-7 pb-5 sm:pt-10 sm:pb-7 cursor-pointer select-none">
+            <!-- Постоянная фоновая ч/б Web3-анимация на прозрачном canvas -->
+            <canvas id="bbHeroCanvas" class="pointer-events-none absolute inset-0 w-full h-full"></canvas>
 
-            <div id="bbLogoContainer" class="relative flex flex-col items-center justify-center">
+            <div id="bbLogoContainer" class="relative z-10 max-w-3xl mx-auto px-4 flex flex-col items-center justify-center">
                 <!-- Первая строка: [Br]eaking -->
                 <div class="flex items-center">
-                    <div class="bb-tile w-14 h-14 sm:w-16 sm:h-16 border-2 border-stone-200/90 rounded-md flex flex-col justify-between p-1.5 text-white shrink-0">
-                        <div class="flex justify-between items-start text-[9px] sm:text-[10px] font-mono leading-none text-emerald-200/90">
+                    <div class="bb-tile w-14 h-14 sm:w-16 sm:h-16 border-2 border-neutral-900 rounded-md flex flex-col justify-between p-1.5 text-white shrink-0">
+                        <div class="flex justify-between items-start text-[9px] sm:text-[10px] font-mono leading-none text-neutral-400">
                             <span>79.90</span>
                             <span class="font-bold text-white">35</span>
                         </div>
-                        <div class="text-center text-2xl sm:text-3xl font-extrabold leading-none tracking-tight">Br</div>
-                        <div class="text-[8px] font-mono text-center text-emerald-200/75 leading-none">Bromine</div>
+                        <div class="text-center text-2xl sm:text-3xl font-extrabold leading-none tracking-tight text-white">Br</div>
+                        <div class="text-[8px] font-mono text-center text-neutral-400 leading-none">Bromine</div>
                     </div>
-                    <span class="bb-word text-3xl sm:text-4xl font-extrabold text-stone-100 pl-1.5 tracking-tight">eaking</span>
+                    <span class="bb-word text-3xl sm:text-4xl font-extrabold text-neutral-950 pl-1.5 tracking-tight">eaking</span>
                 </div>
 
                 <!-- Вторая строка со сдвигом: [Br]ead -->
                 <div class="flex items-center mt-1.5 ml-14 sm:ml-20">
-                    <div class="bb-tile bb-tile-delay w-14 h-14 sm:w-16 sm:h-16 border-2 border-stone-200/90 rounded-md flex flex-col justify-between p-1.5 text-white shrink-0">
-                        <div class="flex justify-between items-start text-[9px] sm:text-[10px] font-mono leading-none text-emerald-200/90">
+                    <div class="bb-tile bb-tile-delay w-14 h-14 sm:w-16 sm:h-16 border-2 border-neutral-900 rounded-md flex flex-col justify-between p-1.5 text-white shrink-0">
+                        <div class="flex justify-between items-start text-[9px] sm:text-[10px] font-mono leading-none text-neutral-400">
                             <span>100%</span>
                             <span class="font-bold text-white">35</span>
                         </div>
-                        <div class="text-center text-2xl sm:text-3xl font-extrabold leading-none tracking-tight">Br</div>
-                        <div class="text-[8px] font-mono text-center text-emerald-200/75 leading-none">Flour</div>
+                        <div class="text-center text-2xl sm:text-3xl font-extrabold leading-none tracking-tight text-white">Br</div>
+                        <div class="text-[8px] font-mono text-center text-neutral-400 leading-none">Flour</div>
                     </div>
-                    <span class="bb-word-delay text-3xl sm:text-4xl font-extrabold text-stone-100 pl-1.5 tracking-tight">ead</span>
+                    <span class="bb-word-delay text-3xl sm:text-4xl font-extrabold text-neutral-950 pl-1.5 tracking-tight">ead</span>
                 </div>
             </div>
         </header>
 
-        <!-- Полоса активных таймеров (показывается, если вы вернулись назад, а таймер идёт) -->
-        <div id="homeActiveTimers" class="hidden space-y-2"></div>
+        <main class="max-w-3xl mx-auto px-4 pb-8 space-y-6">
+            <!-- Полоса активных таймеров (показывается, если вы вернулись назад, а таймер идёт) -->
+            <div id="homeActiveTimers" class="hidden space-y-2"></div>
 
-        <!-- Сетка карточек блюд с картинками -->
-        <section class="space-y-3">
-            <div class="flex items-center justify-between px-0.5">
-                <h1 class="text-sm font-bold uppercase tracking-wider text-stone-500">Выберите рецепт</h1>
-                <span class="text-xs text-stone-400">10 рецептов</span>
-            </div>
-            <div id="recipeCardsGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4"></div>
-        </section>
+            <!-- Сетка карточек блюд с картинками -->
+            <section class="space-y-3">
+                <div class="flex items-center justify-between px-0.5">
+                    <h1 class="text-sm font-bold uppercase tracking-wider text-stone-500">Выберите рецепт</h1>
+                    <span class="text-xs text-stone-400">10 рецептов</span>
+                </div>
+                <div id="recipeCardsGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4"></div>
+            </section>
+        </main>
 
-    </main>
+    </div>
 
     <!-- ОТДЕЛЬНАЯ СТРАНИЦА РЕЦЕПТА -->
     <div id="recipeView" class="hidden max-w-2xl mx-auto px-4 py-5 sm:py-8 space-y-5">
@@ -179,7 +181,7 @@
 
             <div class="flex items-center gap-2">
                 <span id="recipeViewTitle" class="text-sm font-bold text-stone-800"></span>
-                <span class="px-2 py-0.5 bg-emerald-900 text-emerald-100 border border-emerald-700 rounded text-[11px] font-mono font-bold">Br</span>
+                <span class="px-2 py-0.5 bg-neutral-900 text-white border border-neutral-800 rounded text-[11px] font-mono font-bold">Br</span>
             </div>
         </div>
 
@@ -914,6 +916,18 @@
             return timers[id];
         }
 
+        /* ==========================================================================
+           ЖИВАЯ WEB3 + CHEMISTRY АНИМАЦИЯ В ШАПКЕ
+           ========================================================================== */
+        const headerFx = {
+            nodes: [],
+            pulses: [],
+            pointer: { x: -999, y: -999, active: false },
+            width: 0,
+            height: 0,
+            initialized: false
+        };
+
         function replayLogoAnimation() {
             const container = document.getElementById('bbLogoContainer');
             if (!container) return;
@@ -921,419 +935,10 @@
             container.parentNode.replaceChild(clone, container);
         }
 
-        function getRunningTimersForRecipe(recipeKey) {
-            return Object.keys(timers)
-                .filter(id => id.startsWith(`${recipeKey}_`) && timers[id].running)
-                .map(id => ({ id, timer: timers[id] }));
-        }
-
-        function renderHomeActiveTimers() {
-            const box = document.getElementById('homeActiveTimers');
-            if (!box) return;
-
-            const runningList = Object.keys(timers)
-                .filter(id => timers[id].running)
-                .map(id => {
-                    const recipeKey = id.split('_')[0];
-                    return { id, recipeKey, timer: timers[id] };
-                });
-
-            if (runningList.length === 0) {
-                box.classList.add('hidden');
-                box.innerHTML = '';
-                return;
-            }
-
-            box.classList.remove('hidden');
-            box.innerHTML = runningList.map(({ id, recipeKey, timer }) => {
-                const recipe = RECIPES[recipeKey];
-                const recipeName = recipe ? recipe.tabLabel : recipeKey;
-                const timeText = formatTime(timer.remainingSec, timer.showHours);
-                return `
-                    <div onclick="openRecipe('${recipeKey}')" class="flex items-center justify-between gap-3 px-4 py-3 bg-stone-900 hover:bg-stone-800 text-white rounded-xl shadow-sm cursor-pointer transition">
-                        <div class="flex items-center gap-2.5 min-w-0">
-                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
-                            <div class="truncate">
-                                <span class="text-xs font-bold text-emerald-300">${recipeName}</span>
-                                <span class="text-xs text-stone-300 ml-1.5">${timer.label.replace(/^[^:]+:\s*/, '')}</span>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-2 shrink-0">
-                            <span id="home-timer-${id}" class="font-mono text-sm sm:text-base font-bold text-amber-400 tabular-nums">${timeText}</span>
-                            <span class="text-xs text-stone-400">→</span>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function renderRecipeCards() {
-            const grid = document.getElementById('recipeCardsGrid');
-            if (!grid) return;
-            grid.innerHTML = '';
-
-            RECIPE_ORDER.forEach(key => {
-                const recipe = RECIPES[key];
-                const running = getRunningTimersForRecipe(key);
-                const hasRunning = running.length > 0;
-                const fallbackUrl = `https://placehold.co/600x450/292524/f5f5f4?text=${encodeURIComponent(recipe.tabLabel)}`;
-
-                const card = document.createElement('button');
-                card.type = 'button';
-                card.onclick = () => openRecipe(key);
-                card.className = hasRunning
-                    ? 'group text-left bg-white border-2 border-emerald-500 ring-4 ring-emerald-500/15 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition flex flex-col cursor-pointer'
-                    : 'group text-left bg-white border border-stone-300 hover:border-stone-500 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition flex flex-col cursor-pointer';
-
-                const runningBadgeHtml = hasRunning
-                    ? `<div class="absolute top-2.5 right-2.5 px-2 py-0.5 bg-stone-900/90 backdrop-blur-xs text-emerald-300 border border-emerald-500/50 rounded-md font-mono text-[11px] font-bold flex items-center gap-1.5 shadow">
-                           <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-                           <span id="card-timer-${running[0].id}">${formatTime(running[0].timer.remainingSec, running[0].timer.showHours)}</span>
-                       </div>`
-                    : '';
-
-                card.innerHTML = `
-                    <div class="relative w-full aspect-[4/3] bg-stone-200 overflow-hidden">
-                        <img
-                            src="${recipe.image}"
-                            alt="${recipe.tabLabel}"
-                            loading="lazy"
-                            onerror="this.onerror=null;this.src='${fallbackUrl}';"
-                            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        >
-                        ${runningBadgeHtml}
-                    </div>
-                    <div class="p-3 sm:p-3.5 flex-1 flex flex-col justify-between">
-                        <div class="font-bold text-sm sm:text-base text-stone-900 group-hover:text-emerald-800 transition">${recipe.tabLabel}</div>
-                        <div class="text-[11px] sm:text-xs text-stone-500 mt-0.5">${recipe.cardTag}</div>
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
-        }
-
-        function saveCurrentRecipeParams() {
-            if (!currentRecipeKey) return;
-            savedRecipeParams[currentRecipeKey] = {
-                scale: currentScale,
-                yeastType: yeastType,
-                optionalEnabled: { ...optionalEnabled }
-            };
-        }
-
-        function openRecipe(key) {
-            if (currentView === 'recipe') {
-                saveCurrentRecipeParams();
-            }
-
-            currentView = 'recipe';
-            switchRecipe(key);
-
-            document.getElementById('homeView').classList.add('hidden');
-            document.getElementById('recipeView').classList.remove('hidden');
-            document.getElementById('recipeViewTitle').textContent = RECIPES[key].tabLabel;
-            window.scrollTo({ top: 0, behavior: 'instant' });
-        }
-
-        function goBackHome() {
-            saveCurrentRecipeParams();
-            currentView = 'home';
-
-            document.getElementById('recipeView').classList.add('hidden');
-            document.getElementById('homeView').classList.remove('hidden');
-            renderRecipeCards();
-            renderHomeActiveTimers();
-            window.scrollTo({ top: 0, behavior: 'instant' });
-        }
-
-        /* ==========================================================================
-           ФОРМАТИРОВАНИЕ И ПЕРЕСЧЁТ ИНГРЕДИЕНТОВ
-           ========================================================================== */
-        function formatNumber(val) {
-            if (val >= 50) return Math.round(val);
-            const rounded = Math.round(val * 10) / 10;
-            return Number.isInteger(rounded) ? rounded : rounded.toFixed(1);
-        }
-
-        function formatTablespoons(grams, gramsPerTbsp) {
-            if (!grams || grams <= 0) return '0 ст. л.';
-            const raw = grams / gramsPerTbsp;
-            if (raw < 1) {
-                const small = Math.max(0.1, Math.round(raw * 10) / 10);
-                return `${small} ст. л.`;
-            }
-            if (raw < 10) {
-                return `${Math.round(raw * 2) / 2} ст. л.`;
-            }
-            return `${Math.round(raw)} ст. л.`;
-        }
-
-        function formatIngredientMeta(item, value) {
-            const safeVal = Math.max(0, Number(value) || 0);
-            if (item.unit === 'шт') {
-                const approxGrams = Math.round(safeVal * (item.weightPerUnit || 55));
-                return `≈ ${approxGrams} г`;
-            }
-
-            const gramsPerTbsp = item.key === 'yeast'
-                ? item.tbspGramsByType[yeastType]
-                : (item.tbspGrams || 15);
-            const tbspText = formatTablespoons(safeVal, gramsPerTbsp);
-
-            if (item.isOil) {
-                const ml = Math.round(safeVal / 0.916);
-                return `≈ ${ml} мл • ${tbspText}`;
-            }
-            if (item.isLiquid) {
-                const ml = Math.round(safeVal);
-                return `≈ ${ml} мл • ${tbspText}`;
-            }
-            return `≈ ${tbspText}`;
-        }
-
-        function getItemBase(item) {
-            return item.key === 'yeast' ? item.bases[yeastType] : item.base;
-        }
-
-        function getItemStep(item) {
-            return item.key === 'yeast' ? item.steps[yeastType] : item.step;
-        }
-
-        function getCurrentTotalWeight() {
-            const recipe = RECIPES[currentRecipeKey];
-            let total = 0;
-            recipe.items.forEach(item => {
-                if (!item.required && !optionalEnabled[item.key]) return;
-                const el = document.getElementById(`ing-${item.key}`);
-                const val = el ? (parseFloat(el.value) || 0) : (getItemBase(item) * currentScale);
-                total += val * (item.weightPerUnit || 1);
-            });
-            return Math.round(total);
-        }
-
-        function switchRecipe(key) {
-            currentRecipeKey = key;
-            const recipe = RECIPES[key];
-
-            if (!fermentModeByRecipe[key]) {
-                fermentModeByRecipe[key] = 'warm';
-            }
-            if (!completedSteps[key]) {
-                completedSteps[key] = {};
-            }
-            if (activeStageByRecipe[key] === undefined) {
-                activeStageByRecipe[key] = 0;
-            }
-            if (!completedStagesByRecipe[key]) {
-                completedStagesByRecipe[key] = {};
-            }
-
-            if (savedRecipeParams[key]) {
-                currentScale = savedRecipeParams[key].scale;
-                yeastType = savedRecipeParams[key].yeastType;
-                optionalEnabled = { ...savedRecipeParams[key].optionalEnabled };
-            } else {
-                currentScale = 1;
-                yeastType = 'dry';
-                optionalEnabled = {};
-                recipe.items.forEach(item => {
-                    if (!item.required) {
-                        optionalEnabled[item.key] = Boolean(item.defaultEnabled);
-                    }
-                });
-            }
-
-            renderIngredients();
-            document.getElementById('recipeHint').textContent = recipe.hint;
-            renderWorkflow();
-        }
-
-        function renderIngredients() {
-            const recipe = RECIPES[currentRecipeKey];
-            const grid = document.getElementById('ingredientsGrid');
-            grid.innerHTML = '';
-
-            recipe.items.forEach(item => {
-                const isEnabled = item.required || optionalEnabled[item.key];
-                const baseVal = getItemBase(item);
-                const scaledVal = formatNumber(baseVal * currentScale);
-                const stepVal = getItemStep(item);
-                const unitLabel = item.unit || 'г';
-
-                const card = document.createElement('div');
-                card.className = isEnabled
-                    ? 'p-3 bg-stone-50 border border-stone-200 focus-within:border-stone-900 focus-within:bg-white rounded-xl transition flex flex-col justify-between'
-                    : 'p-3 bg-stone-100/70 border border-stone-200/80 rounded-xl transition opacity-65 flex flex-col justify-between';
-
-                const headerHtml = item.required
-                    ? `<div class="flex items-center justify-between gap-1 mb-1.5">
-                           <label for="ing-${item.key}" class="text-xs font-semibold text-stone-700">${item.label}</label>
-                       </div>`
-                    : `<label class="flex items-center gap-2 mb-1.5 cursor-pointer select-none">
-                           <input type="checkbox" ${isEnabled ? 'checked' : ''} onchange="toggleOptionalIngredient('${item.key}', this.checked)" class="w-4 h-4 rounded accent-stone-900 cursor-pointer shrink-0">
-                           <span class="text-xs font-semibold ${isEnabled ? 'text-stone-800' : 'text-stone-500'} leading-tight">${item.label}</span>
-                       </label>`;
-
-                const yeastToggleHtml = (item.key === 'yeast' && isEnabled)
-                    ? `<div class="inline-flex p-0.5 bg-stone-200/80 rounded-md text-[11px] mb-1.5 self-start">
-                           <button type="button" onclick="setYeastType('dry')" class="px-2 py-0.5 rounded font-medium cursor-pointer transition ${yeastType === 'dry' ? 'bg-white text-stone-900 shadow-2xs' : 'text-stone-600'}">Сухие</button>
-                           <button type="button" onclick="setYeastType('fresh')" class="px-2 py-0.5 rounded font-medium cursor-pointer transition ${yeastType === 'fresh' ? 'bg-white text-stone-900 shadow-2xs' : 'text-stone-600'}">Живые</button>
-                       </div>`
-                    : '';
-
-                const inputHtml = isEnabled
-                    ? `<div class="relative">
-                           <input
-                               type="number"
-                               id="ing-${item.key}"
-                               value="${scaledVal}"
-                               min="0"
-                               step="${stepVal}"
-                               oninput="onIngredientInput('${item.key}')"
-                               class="w-full pr-7 bg-transparent font-mono text-xl font-bold text-stone-900 focus:outline-none tabular-nums"
-                           >
-                           <span class="absolute right-0 bottom-0.5 text-xs font-mono text-stone-500">${unitLabel}</span>
-                       </div>
-                       <div id="meta-${item.key}" class="text-[11px] font-mono text-stone-500 mt-1">${formatIngredientMeta(item, baseVal * currentScale)}</div>`
-                    : `<div class="text-xs font-mono text-stone-400 pt-1">Не добавлено</div>`;
-
-                card.innerHTML = `${headerHtml}${yeastToggleHtml}${inputHtml}`;
-                grid.appendChild(card);
-            });
-
-            updateTotalWeight();
-        }
-
-        function toggleOptionalIngredient(key, checked) {
-            optionalEnabled[key] = checked;
-            renderIngredients();
-        }
-
-        function setYeastType(type) {
-            if (yeastType === type) return;
-            yeastType = type;
-            renderIngredients();
-        }
-
-        function onIngredientInput(changedKey) {
-            const recipe = RECIPES[currentRecipeKey];
-            const changedItem = recipe.items.find(i => i.key === changedKey);
-            const inputEl = document.getElementById(`ing-${changedKey}`);
-            const rawVal = parseFloat(inputEl.value);
-
-            if (isNaN(rawVal) || rawVal < 0) {
-                updateTotalWeight();
-                return;
-            }
-
-            currentScale = rawVal / getItemBase(changedItem);
-
-            recipe.items.forEach(item => {
-                const scaledVal = getItemBase(item) * currentScale;
-                if (item.key !== changedKey) {
-                    const el = document.getElementById(`ing-${item.key}`);
-                    if (el) {
-                        el.value = formatNumber(scaledVal);
-                    }
-                }
-                const metaEl = document.getElementById(`meta-${item.key}`);
-                if (metaEl) {
-                    metaEl.textContent = formatIngredientMeta(item, scaledVal);
-                }
-            });
-
-            updateTotalWeight();
-        }
-
-        function scaleMultiplier(mult) {
-            currentScale = mult;
-            renderIngredients();
-        }
-
-        function updateTotalWeight() {
-            const total = getCurrentTotalWeight();
-            document.getElementById('totalWeight').textContent = total;
-            renderRecipeWidget(total);
-        }
-
-        /* ==========================================================================
-           ИНДИВИДУАЛЬНЫЕ ПОЛЕЗНЫЕ ВИДЖЕТЫ ДЛЯ КОНКРЕТНЫХ РЕЦЕПТОВ
-           ========================================================================== */
-        function setPizzaBallsCount(n) {
-            pizzaBallsCount = n;
-            renderRecipeWidget(getCurrentTotalWeight());
-        }
-
-        function setBunsSplitCount(n) {
-            bunsSplitCount = n;
-            renderRecipeWidget(getCurrentTotalWeight());
-        }
-
-        function renderRecipeWidget(totalWeight) {
-            const recipe = RECIPES[currentRecipeKey];
-            const box = document.getElementById('recipeWidget');
-
-            if (!recipe.widgetType) {
-                box.classList.add('hidden');
-                box.innerHTML = '';
-                return;
-            }
-
-            box.classList.remove('hidden');
-
-            if (recipe.widgetType === 'pizzaBalls') {
-                const perBall = Math.round(totalWeight / pizzaBallsCount);
-                const opts = [2, 3, 4].map(n => `
-                    <button type="button" onclick="setPizzaBallsCount(${n})" class="px-2 py-0.5 rounded font-mono text-xs cursor-pointer transition ${pizzaBallsCount === n ? 'bg-stone-900 text-white font-semibold' : 'bg-stone-100 text-stone-700 hover:bg-stone-200'}">
-                        ${n} шт.
-                    </button>
-                `).join('');
-                box.innerHTML = `
-                    <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
-                        <div class="flex items-center gap-1.5">
-                            <span class="text-stone-600 font-medium">Деление на пиццы:</span>
-                            ${opts}
-                        </div>
-                        <span class="font-mono font-semibold text-stone-900">По ~${perBall} г на шар</span>
-                    </div>
-                `;
-            } else if (recipe.widgetType === 'bunsSplit') {
-                const perBun = Math.round(totalWeight / bunsSplitCount);
-                const opts = [6, 8, 10].map(n => `
-                    <button type="button" onclick="setBunsSplitCount(${n})" class="px-2 py-0.5 rounded font-mono text-xs cursor-pointer transition ${bunsSplitCount === n ? 'bg-stone-900 text-white font-semibold' : 'bg-stone-100 text-stone-700 hover:bg-stone-200'}">
-                        ${n} шт.
-                    </button>
-                `).join('');
-                box.innerHTML = `
-                    <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
-                        <div class="flex items-center gap-1.5">
-                            <span class="text-stone-600 font-medium">Формовка булочек:</span>
-                            ${opts}
-                        </div>
-                        <span class="font-mono font-semibold text-stone-900">По ~${perBun} г на булочку</span>
-                    </div>
-                `;
-            } else if (recipe.widgetType === 'focacciaOil') {
-                const oilEnabled = optionalEnabled.oil !== false;
-                const oilEl = document.getElementById('ing-oil');
-                const totalOil = oilEnabled ? (oilEl ? (parseFloat(oilEl.value) || 0) : (40 * currentScale)) : 0;
-                const inDough = Math.round(totalOil * 0.5);
-                const inPan = Math.round(totalOil * 0.25);
-                const onTop = Math.max(0, Math.round(totalOil - inDough - inPan));
-                box.innerHTML = oilEnabled
-                    ? `<div class="flex flex-wrap items-center justify-between gap-2 text-xs text-stone-700">
-                           <span class="font-medium text-stone-600">Куда идёт масло (${Math.round(totalOil)} г):</span>
-                           <span class="font-mono font-semibold text-stone-900">${inDough} г в тесто • ${inPan} г в форму • ${onTop} г сверху</span>
-                       </div>`
-                    : `<div class="text-xs text-stone-500">Включите оливковое масло выше, чтобы рассчитать смазку формы и верха.</div>`;
-            } else if (recipe.widgetType === 'yieldEstimate') {
-                const count = Math.max(1, Math.round(totalWeight / recipe.pieceWeight));
-                box.innerHTML = `
-                    <div class="flex items-center justify-between gap-2 text-xs">
-                        <span class="text-stone-600 font-medium">Ориентировочный выход:</span>
-                        <span class="font-mono font-semibold text-stone-900">≈ ${count} ${recipe.pieceName}</span>
-                    </div>
-                `;
+        function handleHeaderClick(event) {
+            replayLogoAnimation();
+            if (window.emitHeroPulse && event) {
+                window.emitHeroPulse(event.clientX, event.clientY);
             }
         }
 
@@ -2003,9 +1608,550 @@
             });
         }, 250);
 
+        /* ==========================================================================
+           НАВИГАЦИЯ МЕЖДУ КАТАЛОГОМ БЛЮД И СТРАНИЦЕЙ РЕЦЕПТА
+           ========================================================================== */
+        function saveCurrentRecipeState() {
+            savedRecipeParams[currentRecipeKey] = {
+                scale: currentScale,
+                yeastType: yeastType,
+                optionalEnabled: { ...optionalEnabled }
+            };
+        }
+
+        function loadRecipeState(recipeKey) {
+            const recipe = RECIPES[recipeKey];
+            const saved = savedRecipeParams[recipeKey];
+            if (saved) {
+                currentScale = saved.scale;
+                yeastType = saved.yeastType;
+                optionalEnabled = { ...saved.optionalEnabled };
+            } else {
+                currentScale = 1;
+                yeastType = 'dry';
+                optionalEnabled = {};
+                recipe.items.forEach(item => {
+                    if (!item.required) {
+                        optionalEnabled[item.key] = Boolean(item.defaultEnabled);
+                    }
+                });
+            }
+        }
+
+        function openRecipe(recipeKey) {
+            if (!RECIPES[recipeKey]) return;
+            if (currentView === 'recipe') {
+                saveCurrentRecipeState();
+            }
+            currentRecipeKey = recipeKey;
+            loadRecipeState(recipeKey);
+            currentView = 'recipe';
+
+            document.getElementById('homeView').classList.add('hidden');
+            document.getElementById('recipeView').classList.remove('hidden');
+            document.getElementById('recipeViewTitle').textContent = RECIPES[recipeKey].tabLabel;
+
+            renderIngredients();
+            renderWorkflow();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function goBackHome() {
+            if (currentView === 'recipe') {
+                saveCurrentRecipeState();
+            }
+            currentView = 'home';
+
+            document.getElementById('recipeView').classList.add('hidden');
+            document.getElementById('homeView').classList.remove('hidden');
+
+            renderRecipeCards();
+            renderHomeActiveTimers();
+        }
+
+        function renderHomeActiveTimers() {
+            const container = document.getElementById('homeActiveTimers');
+            if (!container) return;
+
+            const runningEntries = Object.entries(timers).filter(([, t]) => t.running);
+            if (runningEntries.length === 0) {
+                container.classList.add('hidden');
+                container.innerHTML = '';
+                return;
+            }
+
+            container.classList.remove('hidden');
+            container.innerHTML = runningEntries.map(([id, t]) => {
+                const recipe = RECIPES[t.recipeKey];
+                const recipeName = recipe ? recipe.tabLabel : 'Рецепт';
+                const timeStr = formatTime(t.remainingSec, t.showHours);
+                return `
+                    <button type="button" onclick="openRecipe('${t.recipeKey}')" class="w-full flex items-center justify-between gap-3 px-4 py-2.5 bg-neutral-900 hover:bg-neutral-800 text-white rounded-xl shadow-sm transition cursor-pointer text-left">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping shrink-0"></span>
+                            <div class="truncate">
+                                <span class="text-xs font-bold">${recipeName}</span>
+                                <span class="text-xs text-neutral-400 ml-1.5">${t.label.replace(/^[^:]+:\s*/, '')}</span>
+                            </div>
+                        </div>
+                        <span id="home-timer-${id}" class="font-mono text-sm font-bold text-amber-400 tabular-nums shrink-0">${timeStr}</span>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function renderRecipeCards() {
+            const grid = document.getElementById('recipeCardsGrid');
+            if (!grid) return;
+
+            grid.innerHTML = RECIPE_ORDER.map(key => {
+                const recipe = RECIPES[key];
+                const runningEntry = Object.entries(timers).find(([, t]) => t.recipeKey === key && t.running);
+                const timerBadgeHtml = runningEntry
+                    ? `<div class="absolute top-2.5 right-2.5 px-2 py-1 bg-neutral-900/90 backdrop-blur-xs text-amber-400 font-mono text-xs font-bold rounded-lg flex items-center gap-1.5 shadow">
+                           <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                           <span id="card-timer-${runningEntry[0]}">${formatTime(runningEntry[1].remainingSec, runningEntry[1].showHours)}</span>
+                       </div>`
+                    : '';
+
+                return `
+                    <button type="button" onclick="openRecipe('${key}')" class="group text-left bg-white border border-stone-300 hover:border-neutral-900 rounded-2xl overflow-hidden shadow-2xs hover:shadow-md transition flex flex-col cursor-pointer">
+                        <div class="relative w-full aspect-[4/3] bg-stone-200 overflow-hidden">
+                            <img src="${recipe.image}" alt="${recipe.tabLabel}" loading="lazy"
+                                 onerror="this.onerror=null;this.src='https://placehold.co/400x300/e7e5e4/44403c?text=${encodeURIComponent(recipe.tabLabel)}';"
+                                 class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                            ${timerBadgeHtml}
+                        </div>
+                        <div class="p-3 sm:p-3.5 flex-1 flex flex-col justify-between gap-1">
+                            <div class="font-bold text-sm sm:text-base text-stone-900 group-hover:text-black">${recipe.tabLabel}</div>
+                            <div class="text-[11px] font-mono text-stone-500">${recipe.cardTag}</div>
+                        </div>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        /* ==========================================================================
+           КАЛЬКУЛЯТОР ИНГРЕДИЕНТОВ И ПЕРЕСЧЁТ ПО ЛЮБОМУ ПОЛЮ
+           ========================================================================== */
+        function getItemBase(item) {
+            if (item.key === 'yeast' && item.bases) {
+                return item.bases[yeastType] || item.bases.dry;
+            }
+            return item.base;
+        }
+
+        function getItemStep(item) {
+            if (item.key === 'yeast' && item.steps) {
+                return item.steps[yeastType] || item.steps.dry;
+            }
+            return item.step || 1;
+        }
+
+        function getItemTbspGrams(item) {
+            if (item.key === 'yeast' && item.tbspGramsByType) {
+                return item.tbspGramsByType[yeastType] || item.tbspGramsByType.dry;
+            }
+            return item.tbspGrams || 15;
+        }
+
+        function formatAmount(val) {
+            if (val >= 100) return Math.round(val);
+            if (val >= 10) return Math.round(val * 10) / 10;
+            return Math.round(val * 10) / 10;
+        }
+
+        function formatMeasureHint(item, val) {
+            if (val <= 0) return '—';
+            if (item.unit === 'шт') {
+                const grams = Math.round(val * (item.weightPerUnit || 55));
+                return `≈ ${grams} г`;
+            }
+
+            const tbspGrams = getItemTbspGrams(item);
+            const tbspRaw = val / tbspGrams;
+            const tbspRounded = tbspRaw >= 10 ? Math.round(tbspRaw) : Math.round(tbspRaw * 10) / 10;
+            const tbspText = tbspRaw < 0.25 ? 'щепотка' : `≈ ${tbspRounded} ст. л.`;
+
+            if (item.isOil) {
+                const ml = Math.round(val / 0.92);
+                return `≈ ${ml} мл • ${tbspText}`;
+            }
+            if (item.isLiquid) {
+                const ml = Math.round(val);
+                return `≈ ${ml} мл • ${tbspText}`;
+            }
+            return tbspText;
+        }
+
+        function renderIngredients() {
+            const recipe = RECIPES[currentRecipeKey];
+            const grid = document.getElementById('ingredientsGrid');
+            document.getElementById('recipeHint').textContent = recipe.hint;
+
+            grid.innerHTML = recipe.items.map(item => {
+                const isEnabled = item.required || Boolean(optionalEnabled[item.key]);
+                const baseVal = getItemBase(item);
+                const val = formatAmount(baseVal * currentScale);
+                const unit = item.unit || 'г';
+                const step = getItemStep(item);
+                const hintText = isEnabled ? formatMeasureHint(item, val) : 'не добавлено';
+
+                const headerHtml = item.required
+                    ? `<span class="text-xs font-semibold text-stone-700">${item.label}</span>`
+                    : `<label class="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-700 cursor-pointer select-none">
+                           <input type="checkbox" ${isEnabled ? 'checked' : ''} onchange="toggleOptionalIngredient('${item.key}', this.checked)" class="w-3.5 h-3.5 rounded accent-neutral-900 cursor-pointer">
+                           <span>${item.label}</span>
+                       </label>`;
+
+                const yeastSwitchHtml = (item.key === 'yeast')
+                    ? `<div class="inline-flex p-0.5 bg-stone-200/80 rounded-md text-[10px] font-semibold">
+                           <button type="button" onclick="setYeastType('dry')" class="px-1.5 py-0.5 rounded cursor-pointer transition ${yeastType === 'dry' ? 'bg-white text-stone-900 shadow-2xs' : 'text-stone-500 hover:text-stone-800'}">Сухие</button>
+                           <button type="button" onclick="setYeastType('fresh')" class="px-1.5 py-0.5 rounded cursor-pointer transition ${yeastType === 'fresh' ? 'bg-white text-stone-900 shadow-2xs' : 'text-stone-500 hover:text-stone-800'}">Живые</button>
+                       </div>`
+                    : '';
+
+                return `
+                    <div class="p-3 rounded-xl border transition ${isEnabled ? 'bg-stone-50/70 border-stone-200' : 'bg-stone-100/50 border-stone-200/60 opacity-60'}">
+                        <div class="flex items-center justify-between gap-1 mb-1.5 min-h-[20px]">
+                            ${headerHtml}
+                            ${yeastSwitchHtml}
+                        </div>
+                        <div class="flex items-baseline gap-1.5">
+                            <input type="number"
+                                   id="ing-input-${item.key}"
+                                   value="${val}"
+                                   step="${step}"
+                                   min="0"
+                                   ${isEnabled ? '' : 'disabled'}
+                                   oninput="onIngredientInput('${item.key}', this.value)"
+                                   class="w-full bg-white border border-stone-300 focus:border-neutral-900 focus:outline-none rounded-lg px-2.5 py-1.5 font-mono text-lg font-bold text-stone-900 tabular-nums disabled:bg-stone-100 disabled:text-stone-400">
+                            <span class="text-xs font-mono font-semibold text-stone-500 shrink-0">${unit}</span>
+                        </div>
+                        <div id="ing-hint-${item.key}" class="mt-1.5 text-[11px] font-mono text-stone-500 truncate">${hintText}</div>
+                    </div>
+                `;
+            }).join('');
+
+            updateTotalWeightAndWidget();
+        }
+
+        function onIngredientInput(changedKey, rawVal) {
+            const num = parseFloat(rawVal);
+            if (isNaN(num) || num <= 0) return;
+
+            const recipe = RECIPES[currentRecipeKey];
+            const changedItem = recipe.items.find(i => i.key === changedKey);
+            if (!changedItem) return;
+
+            const baseVal = getItemBase(changedItem);
+            if (baseVal <= 0) return;
+
+            currentScale = num / baseVal;
+            saveCurrentRecipeState();
+
+            recipe.items.forEach(item => {
+                const isEnabled = item.required || Boolean(optionalEnabled[item.key]);
+                const val = formatAmount(getItemBase(item) * currentScale);
+                if (item.key !== changedKey) {
+                    const inputEl = document.getElementById(`ing-input-${item.key}`);
+                    if (inputEl) inputEl.value = val;
+                }
+                const hintEl = document.getElementById(`ing-hint-${item.key}`);
+                if (hintEl) {
+                    hintEl.textContent = isEnabled ? formatMeasureHint(item, val) : 'не добавлено';
+                }
+            });
+
+            updateTotalWeightAndWidget();
+        }
+
+        function toggleOptionalIngredient(key, checked) {
+            optionalEnabled[key] = checked;
+            saveCurrentRecipeState();
+            renderIngredients();
+        }
+
+        function setYeastType(type) {
+            if (yeastType === type) return;
+            yeastType = type;
+            saveCurrentRecipeState();
+            renderIngredients();
+        }
+
+        function scaleMultiplier(mult) {
+            currentScale = mult;
+            saveCurrentRecipeState();
+            renderIngredients();
+        }
+
+        function updateTotalWeightAndWidget() {
+            const recipe = RECIPES[currentRecipeKey];
+            let totalGrams = 0;
+
+            recipe.items.forEach(item => {
+                const isEnabled = item.required || Boolean(optionalEnabled[item.key]);
+                if (!isEnabled) return;
+                const amount = getItemBase(item) * currentScale;
+                if (item.unit === 'шт') {
+                    totalGrams += amount * (item.weightPerUnit || 55);
+                } else {
+                    totalGrams += amount;
+                }
+            });
+
+            const roundedTotal = Math.round(totalGrams);
+            document.getElementById('totalWeight').textContent = roundedTotal;
+
+            const widgetEl = document.getElementById('recipeWidget');
+            if (!recipe.widgetType) {
+                widgetEl.classList.add('hidden');
+                widgetEl.innerHTML = '';
+                return;
+            }
+
+            widgetEl.classList.remove('hidden');
+
+            if (recipe.widgetType === 'pizzaBalls') {
+                const perBall = Math.round(roundedTotal / pizzaBallsCount);
+                widgetEl.innerHTML = `
+                    <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-stone-600 font-medium">Деление на пиццы:</span>
+                            ${[2, 3, 4].map(n => `
+                                <button type="button" onclick="setPizzaBallsCount(${n})" class="px-2 py-0.5 rounded-md font-mono cursor-pointer transition ${pizzaBallsCount === n ? 'bg-neutral-900 text-white font-bold' : 'bg-stone-100 text-stone-700 hover:bg-stone-200'}">${n} шт</button>
+                            `).join('')}
+                        </div>
+                        <span class="font-mono font-semibold text-stone-800">1 шар ≈ ${perBall} г</span>
+                    </div>
+                `;
+            } else if (recipe.widgetType === 'bunsSplit') {
+                const perBun = Math.round(roundedTotal / bunsSplitCount);
+                widgetEl.innerHTML = `
+                    <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-stone-600 font-medium">Количество булочек:</span>
+                            ${[6, 8, 10, 12].map(n => `
+                                <button type="button" onclick="setBunsSplitCount(${n})" class="px-2 py-0.5 rounded-md font-mono cursor-pointer transition ${bunsSplitCount === n ? 'bg-neutral-900 text-white font-bold' : 'bg-stone-100 text-stone-700 hover:bg-stone-200'}">${n} шт</button>
+                            `).join('')}
+                        </div>
+                        <span class="font-mono font-semibold text-stone-800">1 булочка ≈ ${perBun} г</span>
+                    </div>
+                `;
+            } else if (recipe.widgetType === 'focacciaOil') {
+                const oilItem = recipe.items.find(i => i.key === 'oil');
+                const oilActive = oilItem && (oilItem.required || optionalEnabled.oil);
+                if (!oilActive) {
+                    widgetEl.classList.add('hidden');
+                    return;
+                }
+                const totalOil = Math.round(getItemBase(oilItem) * currentScale);
+                const inDough = Math.round(totalOil * 0.5);
+                const inPan = Math.round(totalOil * 0.25);
+                const onTop = Math.max(0, totalOil - inDough - inPan);
+                widgetEl.innerHTML = `
+                    <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-stone-600">
+                        <span class="font-semibold text-stone-800">Распределение масла (${totalOil} г):</span>
+                        <span class="font-mono">${inDough} г в тесто • ${inPan} г в форму • ${onTop} г сверху</span>
+                    </div>
+                `;
+            } else if (recipe.widgetType === 'yieldEstimate') {
+                const count = Math.max(1, Math.round(roundedTotal / (recipe.pieceWeight || 55)));
+                widgetEl.innerHTML = `
+                    <div class="flex items-center justify-between gap-2 text-xs text-stone-600">
+                        <span>Ориентировочный выход:</span>
+                        <span class="font-mono font-semibold text-stone-900">≈ ${count} ${recipe.pieceName || 'шт'} (по ~${recipe.pieceWeight} г)</span>
+                    </div>
+                `;
+            }
+        }
+
+        function setPizzaBallsCount(n) {
+            pizzaBallsCount = n;
+            updateTotalWeightAndWidget();
+        }
+
+        function setBunsSplitCount(n) {
+            bunsSplitCount = n;
+            updateTotalWeightAndWidget();
+        }
+
         // Запуск главной страницы при открытии
         renderRecipeCards();
         renderHomeActiveTimers();
+
+        /* ==========================================================================
+           ПОСТОЯННАЯ МОНОХРОМНАЯ WEB3-АНИМАЦИЯ НА ПРОЗРАЧНОМ ФОНЕ ШАПКИ
+           ========================================================================== */
+        (function initHeroCanvas() {
+            const header = document.getElementById('heroHeader');
+            const canvas = document.getElementById('bbHeroCanvas');
+            if (!header || !canvas) return;
+            const ctx = canvas.getContext('2d');
+
+            let width = 0;
+            let height = 0;
+            let dpr = 1;
+            let nodes = [];
+            const pulses = [];
+            const pointer = { x: -9999, y: -9999 };
+
+            function resizeCanvas() {
+                const rect = header.getBoundingClientRect();
+                width = Math.max(1, rect.width);
+                height = Math.max(1, rect.height);
+                dpr = Math.min(window.devicePixelRatio || 1, 2);
+                canvas.width = Math.floor(width * dpr);
+                canvas.height = Math.floor(height * dpr);
+                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+                const targetCount = Math.max(18, Math.min(44, Math.floor(width / 32)));
+                if (nodes.length === 0) {
+                    for (let i = 0; i < targetCount; i++) {
+                        nodes.push(createNode());
+                    }
+                } else if (nodes.length < targetCount) {
+                    while (nodes.length < targetCount) nodes.push(createNode());
+                } else if (nodes.length > targetCount) {
+                    nodes.length = targetCount;
+                }
+            }
+
+            function createNode() {
+                return {
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    vx: (Math.random() - 0.5) * 0.32,
+                    vy: (Math.random() - 0.5) * 0.24,
+                    radius: Math.random() < 0.28 ? 2.2 : 1.4,
+                    phase: Math.random() * Math.PI * 2,
+                    isSquare: Math.random() < 0.25
+                };
+            }
+
+            // Плавное затухание прозрачности у самого низа, чтобы узлы растворялись без резкой границы
+            function edgeAlpha(y) {
+                const bottomFadeStart = height * 0.72;
+                if (y <= bottomFadeStart) return 1;
+                return Math.max(0, 1 - (y - bottomFadeStart) / (height - bottomFadeStart));
+            }
+
+            window.emitHeroPulse = function (clientX, clientY) {
+                const rect = header.getBoundingClientRect();
+                pulses.push({
+                    x: clientX - rect.left,
+                    y: clientY - rect.top,
+                    r: 6,
+                    maxR: Math.max(140, width * 0.22),
+                    alpha: 0.26
+                });
+            };
+
+            header.addEventListener('pointermove', (e) => {
+                const rect = header.getBoundingClientRect();
+                pointer.x = e.clientX - rect.left;
+                pointer.y = e.clientY - rect.top;
+            });
+            header.addEventListener('pointerleave', () => {
+                pointer.x = -9999;
+                pointer.y = -9999;
+            });
+
+            function animate(now) {
+                if (currentView === 'home' && width > 0 && height > 0) {
+                    ctx.clearRect(0, 0, width, height);
+                    const t = now * 0.001;
+
+                    // Обновление координат узлов
+                    for (let i = 0; i < nodes.length; i++) {
+                        const n = nodes[i];
+                        n.x += n.vx;
+                        n.y += n.vy;
+
+                        if (n.x < -12) n.x = width + 12;
+                        if (n.x > width + 12) n.x = -12;
+                        if (n.y < -12) n.y = height + 12;
+                        if (n.y > height + 12) n.y = -12;
+
+                        // Мягкое притяжение/отклик на курсор
+                        const dx = pointer.x - n.x;
+                        const dy = pointer.y - n.y;
+                        const dist = Math.hypot(dx, dy);
+                        if (dist > 1 && dist < 130) {
+                            const pull = (1 - dist / 130) * 0.012;
+                            n.x += dx * pull;
+                            n.y += dy * pull;
+                        }
+                    }
+
+                    // Тонкие монохромные связи между узлами
+                    const maxDist = 115;
+                    ctx.lineWidth = 0.8;
+                    for (let i = 0; i < nodes.length; i++) {
+                        const a = nodes[i];
+                        const fadeA = edgeAlpha(a.y);
+                        if (fadeA <= 0.01) continue;
+
+                        for (let j = i + 1; j < nodes.length; j++) {
+                            const b = nodes[j];
+                            const d = Math.hypot(a.x - b.x, a.y - b.y);
+                            if (d < maxDist) {
+                                const fadeB = edgeAlpha(b.y);
+                                const alpha = (1 - d / maxDist) * 0.14 * Math.min(fadeA, fadeB);
+                                if (alpha > 0.005) {
+                                    ctx.strokeStyle = `rgba(17, 17, 17, ${alpha.toFixed(3)})`;
+                                    ctx.beginPath();
+                                    ctx.moveTo(a.x, a.y);
+                                    ctx.lineTo(b.x, b.y);
+                                    ctx.stroke();
+                                }
+                            }
+                        }
+                    }
+
+                    // Узлы (точки и микро-квадраты в стиле периодической таблицы)
+                    for (let i = 0; i < nodes.length; i++) {
+                        const n = nodes[i];
+                        const fade = edgeAlpha(n.y);
+                        if (fade <= 0.01) continue;
+
+                        const pulseAlpha = 0.16 + 0.1 * Math.sin(t * 1.8 + n.phase);
+                        const alpha = pulseAlpha * fade;
+                        ctx.fillStyle = `rgba(17, 17, 17, ${alpha.toFixed(3)})`;
+
+                        if (n.isSquare) {
+                            const s = n.radius * 2.1;
+                            ctx.fillRect(n.x - s / 2, n.y - s / 2, s, s);
+                        } else {
+                            ctx.beginPath();
+                            ctx.arc(n.x, n.y, n.radius, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                    }
+
+                    // Импульсные кольца при нажатии на шапку
+                    for (let i = pulses.length - 1; i >= 0; i--) {
+                        const p = pulses[i];
+                        p.r += 3.2;
+                        p.alpha *= 0.955;
+                        if (p.r >= p.maxR || p.alpha <= 0.008) {
+                            pulses.splice(i, 1);
+                            continue;
+                        }
+                        ctx.strokeStyle = `rgba(17, 17, 17, ${p.alpha.toFixed(3)})`;
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                        ctx.stroke();
+                    }
+                }
+                requestAnimationFrame(animate);
+            }
+
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+            requestAnimationFrame(animate);
+        })();
     </script>
 </body>
 </html>
