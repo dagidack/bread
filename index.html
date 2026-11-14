@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Кухонный гайд — рецепты и таймеры</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='3' y='3' width='58' height='58' rx='15' fill='%231c1917' stroke='%23f59e0b' stroke-width='4'/%3E%3Cpath d='M22 16c0-3 3-4 3-7M32 15c0-3 3-4 3-7M42 16c0-3 3-4 3-7' stroke='%23fde68a' stroke-width='3' stroke-linecap='round' fill='none'/%3E%3Cpath d='M13 42c0-11 8-19 19-19s19 8 19 19c0 5-4 9-9 9H22c-5 0-9-4-9-9z' fill='%23f59e0b'/%3E%3Cpath d='M22 28l5 7M31 26l5 8M40 28l4 6' stroke='%231c1917' stroke-width='3.2' stroke-linecap='round'/%3E%3C/svg%3E">
+    <title>Breaking Bread</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='4' y='4' width='56' height='56' rx='12' fill='%23144528' stroke='%23e7e5e4' stroke-width='3.5'/%3E%3Ctext x='52' y='18' text-anchor='end' fill='%23d6d3d1' font-family='monospace' font-size='11' font-weight='bold'%3E35%3C/text%3E%3Ctext x='32' y='44' text-anchor='middle' fill='%23ffffff' font-family='sans-serif' font-size='28' font-weight='800'%3EBr%3C/text%3E%3C/svg%3E">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -33,13 +33,74 @@
         .tabular-nums {
             font-variant-numeric: tabular-nums;
         }
+
+        /* Анимация в стиле Breaking Bad */
+        @keyframes bbTileDrop {
+            0% {
+                opacity: 0;
+                transform: scale(1.22) translateY(-8px);
+                filter: brightness(1.5);
+            }
+            65% {
+                opacity: 1;
+                transform: scale(0.98) translateY(0);
+                filter: brightness(1.1);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+                filter: brightness(1);
+            }
+        }
+        @keyframes bbWordReveal {
+            0% {
+                opacity: 0;
+                transform: translateX(-10px);
+                letter-spacing: 0.08em;
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(0);
+                letter-spacing: -0.02em;
+            }
+        }
+        @keyframes bbVaporFloat {
+            0% {
+                opacity: 0;
+                transform: translateY(6px) scale(0.9);
+            }
+            50% {
+                opacity: 0.45;
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-16px) scale(1.15);
+            }
+        }
+        .bb-tile {
+            background: linear-gradient(145deg, #1f633b 0%, #113b22 60%, #092414 100%);
+            box-shadow: 0 8px 22px -6px rgba(17, 59, 34, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+            animation: bbTileDrop 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+        .bb-tile-delay {
+            animation-delay: 0.16s;
+        }
+        .bb-word {
+            animation: bbWordReveal 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.12s both;
+        }
+        .bb-word-delay {
+            animation: bbWordReveal 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.28s both;
+        }
+        .bb-vapor {
+            animation: bbVaporFloat 3.4s ease-in-out infinite;
+        }
     </style>
 </head>
 <body class="bg-stone-100 text-stone-900 font-sans antialiased min-h-screen">
 
     <!-- Плашка звукового оповещения (вместо alert) -->
     <div id="alarmBanner" class="hidden fixed top-0 inset-x-0 z-50 bg-amber-600 text-white shadow-lg">
-        <div class="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+        <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
             <div class="flex items-center gap-2.5">
                 <span class="inline-block w-2.5 h-2.5 rounded-full bg-white animate-ping"></span>
                 <span id="alarmText" class="font-semibold text-sm">Время вышло</span>
@@ -50,10 +111,77 @@
         </div>
     </div>
 
-    <main class="max-w-2xl mx-auto px-4 py-5 sm:py-8 space-y-5">
+    <!-- ГЛАВНЫЙ ЭКРАН: АНИМАЦИЯ BREAKING BREAD + КАРТОЧКИ БЛЮД -->
+    <main id="homeView" class="max-w-3xl mx-auto px-4 py-5 sm:py-8 space-y-6">
 
-        <!-- Переключатель рецепта -->
-        <div id="recipeTabs" class="grid grid-cols-2 sm:grid-cols-5 gap-1.5 p-1.5 bg-stone-200/80 rounded-xl"></div>
+        <!-- Шапка с отсылкой на Breaking Bad (клик перезапускает анимацию) -->
+        <header onclick="replayLogoAnimation()" title="Нажмите, чтобы повторить анимацию" class="relative overflow-hidden bg-stone-900 border border-stone-800 rounded-2xl px-5 py-6 sm:px-8 sm:py-7 shadow-md cursor-pointer select-none">
+            <!-- Лёгкий дымок / пар на фоне -->
+            <div class="pointer-events-none absolute inset-0 overflow-hidden">
+                <div class="bb-vapor absolute left-1/4 bottom-2 w-24 h-24 rounded-full bg-emerald-500/15 blur-2xl"></div>
+                <div class="bb-vapor absolute right-1/4 top-3 w-28 h-28 rounded-full bg-amber-400/10 blur-2xl" style="animation-delay: 1.5s;"></div>
+            </div>
+
+            <div id="bbLogoContainer" class="relative flex flex-col items-center justify-center">
+                <!-- Первая строка: [Br]eaking -->
+                <div class="flex items-center">
+                    <div class="bb-tile w-14 h-14 sm:w-16 sm:h-16 border-2 border-stone-200/90 rounded-md flex flex-col justify-between p-1.5 text-white shrink-0">
+                        <div class="flex justify-between items-start text-[9px] sm:text-[10px] font-mono leading-none text-emerald-200/90">
+                            <span>79.90</span>
+                            <span class="font-bold text-white">35</span>
+                        </div>
+                        <div class="text-center text-2xl sm:text-3xl font-extrabold leading-none tracking-tight">Br</div>
+                        <div class="text-[8px] font-mono text-center text-emerald-200/75 leading-none">Bromine</div>
+                    </div>
+                    <span class="bb-word text-3xl sm:text-4xl font-extrabold text-stone-100 pl-1.5 tracking-tight">eaking</span>
+                </div>
+
+                <!-- Вторая строка со сдвигом: [Br]ead -->
+                <div class="flex items-center mt-1.5 ml-14 sm:ml-20">
+                    <div class="bb-tile bb-tile-delay w-14 h-14 sm:w-16 sm:h-16 border-2 border-stone-200/90 rounded-md flex flex-col justify-between p-1.5 text-white shrink-0">
+                        <div class="flex justify-between items-start text-[9px] sm:text-[10px] font-mono leading-none text-emerald-200/90">
+                            <span>100%</span>
+                            <span class="font-bold text-white">35</span>
+                        </div>
+                        <div class="text-center text-2xl sm:text-3xl font-extrabold leading-none tracking-tight">Br</div>
+                        <div class="text-[8px] font-mono text-center text-emerald-200/75 leading-none">Flour</div>
+                    </div>
+                    <span class="bb-word-delay text-3xl sm:text-4xl font-extrabold text-stone-100 pl-1.5 tracking-tight">ead</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Полоса активных таймеров (показывается, если вы вернулись назад, а таймер идёт) -->
+        <div id="homeActiveTimers" class="hidden space-y-2"></div>
+
+        <!-- Сетка карточек блюд с картинками -->
+        <section class="space-y-3">
+            <div class="flex items-center justify-between px-0.5">
+                <h1 class="text-sm font-bold uppercase tracking-wider text-stone-500">Выберите рецепт</h1>
+                <span class="text-xs text-stone-400">10 рецептов</span>
+            </div>
+            <div id="recipeCardsGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4"></div>
+        </section>
+
+    </main>
+
+    <!-- ОТДЕЛЬНАЯ СТРАНИЦА РЕЦЕПТА -->
+    <div id="recipeView" class="hidden max-w-2xl mx-auto px-4 py-5 sm:py-8 space-y-5">
+
+        <!-- Верхняя панель с кнопкой Назад -->
+        <div class="flex items-center justify-between gap-3">
+            <button type="button" onclick="goBackHome()" class="inline-flex items-center gap-2 px-3.5 py-2 bg-white hover:bg-stone-50 active:bg-stone-100 border border-stone-300 rounded-xl text-sm font-semibold text-stone-800 shadow-2xs transition cursor-pointer">
+                <svg class="w-4 h-4 text-stone-600" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                </svg>
+                <span>Назад к блюдам</span>
+            </button>
+
+            <div class="flex items-center gap-2">
+                <span id="recipeViewTitle" class="text-sm font-bold text-stone-800"></span>
+                <span class="px-2 py-0.5 bg-emerald-900 text-emerald-100 border border-emerald-700 rounded text-[11px] font-mono font-bold">Br</span>
+            </div>
+        </div>
 
         <!-- 1. ИНГРЕДИЕНТЫ (пересчёт от любого поля) -->
         <section class="bg-white border border-stone-300 rounded-2xl p-4 sm:p-6 shadow-sm">
@@ -93,7 +221,7 @@
         <!-- ДИНАМИЧЕСКИЕ ЭТАПЫ ПРИГОТОВЛЕНИЯ (адаптируются под каждый рецепт) -->
         <div id="workflowContainer" class="space-y-5"></div>
 
-    </main>
+    </div>
 
     <script>
         /* ==========================================================================
@@ -107,56 +235,66 @@
         const RECIPES = {
             bread: {
                 tabLabel: 'Хлеб',
+                image: 'img/bread.jpg',
+                cardTag: 'Духовка • 250° / 210°',
                 items: [
                     { key: 'flour', label: 'Мука', base: 250, step: 10, tbspGrams: 10, required: true },
                     { key: 'water', label: 'Вода тёплая', base: 165, step: 5, tbspGrams: 15, isLiquid: true, required: true },
                     { key: 'salt', label: 'Соль', base: 5, step: 0.5, tbspGrams: 18, required: true },
-                    { key: 'yeast', label: 'Дрожжи', bases: { dry: 2.5, fresh: 7.5 }, steps: { dry: 0.5, fresh: 1 }, tbspGramsByType: { dry: 9, fresh: 14 }, required: false, defaultEnabled: true },
-                    { key: 'sugar', label: 'Сахар', base: 5, step: 0.5, tbspGrams: 15, required: false, defaultEnabled: false },
-                    { key: 'oil', label: 'Оливковое масло', base: 15, step: 1, tbspGrams: 13.74, required: false, defaultEnabled: false, isOil: true }
+                    {
+                        key: 'yeast',
+                        label: 'Дрожжи',
+                        bases: { dry: 2.5, fresh: 7.5 },
+                        steps: { dry: 0.5, fresh: 1 },
+                        tbspGramsByType: { dry: 9, fresh: 14 },
+                        required: false,
+                        defaultEnabled: true
+                    },
+                    { key: 'sugar', label: 'Сахар', base: 5, step: 1, tbspGrams: 15, required: false, defaultEnabled: false },
+                    { key: 'oil', label: 'Оливковое масло', base: 10, step: 2, tbspGrams: 14, isOil: true, required: false, defaultEnabled: false }
                 ],
-                hint: 'Воды чуть больше (165 г на 250 г муки) — мякиш мягче, форму держит.',
+                hint: 'Универсальное тесто для формы или батона на противне. Дрожжей немного — мякиш без резкого запаха.',
                 blocks: [
                     {
                         type: 'ferment2',
                         title: '1. Брожение теста',
-                        warmMins: 90,
-                        coldMins: 12 * 60,
-                        warmHint: 'Подъём 1.5–2 часа в тепле, затем сформовать батон и дать постоять 30 мин.',
-                        coldHint: 'Убрать в миске под плёнкой в холодильник (+4…+6 °C) на 8–24 ч, затем сформовать и согреть 30–40 мин.',
-                        stage1Title: '1.1 Основной подъём в миске',
                         stage1Short: '1.1 Подъём',
-                        stage2Title: '1.2 Расстойка после формовки',
                         stage2Short: '1.2 Расстойка',
-                        proofWarmHint: 'Сформовать батон и дать постоять',
-                        proofColdHint: 'Сформовать и дать согреться перед духовкой',
+                        warmHint: 'Подъём 1.5–2 часа в тепле (тесто должно вырасти вдвое), затем сформовать батон и дать постоять 30 мин.',
+                        coldHint: 'Выбродить в холодильнике 12–24 ч (+4…+6 °C), затем сформовать батон и дать согреться/подойти 45–60 мин.',
+                        stage1Title: '1.1 Основной подъём в миске',
+                        warmMins: 90,
+                        coldMins: 16 * 60,
+                        stage2Title: '1.2 Расстойка после формовки',
+                        proofWarmHint: 'Накрыть полотенцем или плёнкой, чтобы верх не заветрился.',
+                        proofColdHint: 'После холодильника тесту нужно больше времени на расстойку перед духовкой.',
                         proofMins: 30,
                         proofPresets: [
                             { label: '20 мин', mins: 20 },
                             { label: '30 мин', mins: 30 },
-                            { label: '40 мин', mins: 40 },
-                            { label: '45 мин', mins: 45 }
+                            { label: '45 мин', mins: 45 },
+                            { label: '60 мин', mins: 60 }
                         ]
                     },
                     {
                         type: 'bake2',
                         title: '2. Выпечка и температура',
-                        instruction: '15 мин на 250 °C с кипятком внизу, затем убрать воду и допечь 15–18 мин на 210 °C.',
+                        instruction: '15 мин на 250 °C с кипятком внизу духовки для пара, затем убрать миску с водой и допечь 15–18 мин на 210 °C.',
                         stage1: {
-                            title: '2.1 С паром (кипяток внизу)',
                             short: '2.1 С паром',
-                            temp: '250 °C',
+                            title: '2.1 Выпечка с паром',
+                            temp: '250 °C • пар',
                             mins: 15,
                             presets: [
                                 { label: '12 мин', mins: 12 },
                                 { label: '15 мин', mins: 15 },
-                                { label: '18 мин', mins: 18 }
+                                { label: '20 мин', mins: 20 }
                             ]
                         },
                         stage2: {
-                            title: '2.2 Без пара (убрать воду и допечь)',
                             short: '2.2 Без пара',
-                            temp: '210 °C',
+                            title: '2.2 Без пара (допечь)',
+                            temp: '210 °C • сухо',
                             mins: 18,
                             presets: [
                                 { label: '15 мин', mins: 15 },
@@ -170,33 +308,43 @@
 
             pizza: {
                 tabLabel: 'Пицца',
+                image: 'img/pizza.jpg',
+                cardTag: 'Духовка • 220 °C',
                 widgetType: 'pizzaBalls',
                 items: [
                     { key: 'flour', label: 'Мука', base: 450, step: 10, tbspGrams: 10, required: true },
-                    { key: 'water', label: 'Вода тёплая', base: 300, step: 5, tbspGrams: 15, isLiquid: true, required: true },
-                    { key: 'salt', label: 'Соль', base: 9, step: 0.5, tbspGrams: 18, required: true },
-                    { key: 'yeast', label: 'Дрожжи', bases: { dry: 4, fresh: 12 }, steps: { dry: 0.5, fresh: 1 }, tbspGramsByType: { dry: 9, fresh: 14 }, required: false, defaultEnabled: true },
-                    { key: 'sugar', label: 'Сахар', base: 8, step: 0.5, tbspGrams: 15, required: false, defaultEnabled: true },
-                    { key: 'oil', label: 'Оливковое масло', base: 55, step: 5, tbspGrams: 13.74, required: false, defaultEnabled: true, isOil: true }
+                    { key: 'water', label: 'Вода тёплая', base: 300, step: 10, tbspGrams: 15, isLiquid: true, required: true },
+                    { key: 'salt', label: 'Соль', base: 8, step: 0.5, tbspGrams: 18, required: true },
+                    {
+                        key: 'yeast',
+                        label: 'Дрожжи',
+                        bases: { dry: 4, fresh: 12 },
+                        steps: { dry: 0.5, fresh: 1 },
+                        tbspGramsByType: { dry: 9, fresh: 14 },
+                        required: false,
+                        defaultEnabled: true
+                    },
+                    { key: 'oil', label: 'Оливковое масло', base: 55, step: 5, tbspGrams: 14, isOil: true, required: false, defaultEnabled: true },
+                    { key: 'sugar', label: 'Сахар', base: 8, step: 1, tbspGrams: 15, required: false, defaultEnabled: true }
                 ],
-                hint: 'Добавлено ~4 ст. л. оливкового масла (60 мл) и 4 г сухих дрожжей — край хрустит и не пересыхает.',
+                hint: '450 г муки хватает на 2 тонкие пиццы ~30 см. Оливковое масло делает край мягче в обычной духовке.',
                 blocks: [
                     {
                         type: 'ferment2',
-                        title: '1. Брожение и отдых заготовок',
-                        warmMins: 60,
-                        coldMins: 24 * 60,
-                        warmHint: 'Подъём 1–2 часа в тепле, затем разделить на шары и дать отдохнуть 20–30 мин.',
-                        coldHint: 'Убрать в закрытой миске в холодильник (+4…+6 °C) на 12–48 ч. Достать за 40 мин до растягивания.',
-                        stage1Title: '1.1 Основной подъём в миске',
+                        title: '1. Брожение и шары',
                         stage1Short: '1.1 Подъём',
-                        stage2Title: '1.2 Отдых шаров перед растяжкой',
                         stage2Short: '1.2 Отдых шаров',
-                        proofWarmHint: 'Разделить на шары, округлить и накрыть',
-                        proofColdHint: 'Достать из холодильника и согреть перед растяжкой',
+                        warmHint: 'Подъём 1.5–2 часа в тепле, затем разделить на шары и дать им расслабиться 25 мин.',
+                        coldHint: 'Холодное брожение 24–48 ч делает тесто эластичным; достать за 40–60 мин до растяжки.',
+                        stage1Title: '1.1 Подъём теста',
+                        warmMins: 90,
+                        coldMins: 24 * 60,
+                        stage2Title: '1.2 Отдых после деления на шары',
+                        proofWarmHint: 'Подпылить мукой и накрыть миской, чтобы тесто легко тянулось руками.',
+                        proofColdHint: 'Дайте шарам согреться до комнатной температуры перед раскаткой.',
                         proofMins: 25,
                         proofPresets: [
-                            { label: '15 мин', mins: 15 },
+                            { label: '20 мин', mins: 20 },
                             { label: '25 мин', mins: 25 },
                             { label: '40 мин', mins: 40 },
                             { label: '60 мин', mins: 60 }
@@ -204,14 +352,14 @@
                     },
                     {
                         type: 'singleTimer',
-                        title: '2. Выпечка в духовке',
+                        title: '2. Выпечка пиццы',
                         shortTitle: '2. Выпечка',
-                        instruction: 'Растянуть тесто руками от центра к краям (не скалкой). Печь на максимально разогретом противне при 220–230 °C около 12 мин.',
+                        instruction: 'Разогреть духовку заранее вместе с противнем. Выпекать 10–12 мин при 220 °C (или 14–16 мин при 200 °C) без пара.',
                         timerTitle: 'Таймер выпечки',
                         badge: '220 °C',
                         mins: 12,
                         presets: [
-                            { label: '10 мин • 230°', mins: 10, badge: '230 °C' },
+                            { label: '10 мин • 240°', mins: 10, badge: '240 °C' },
                             { label: '12 мин • 220°', mins: 12, badge: '220 °C' },
                             { label: '15 мин • 200°', mins: 15, badge: '200 °C' }
                         ]
@@ -221,38 +369,40 @@
 
             lavash: {
                 tabLabel: 'Лаваш',
+                image: 'img/lavash.jpg',
+                cardTag: 'Сухая сковорода',
                 widgetType: 'yieldEstimate',
                 pieceWeight: 65,
-                pieceName: 'тонких лавашей',
+                pieceName: 'тонких листов',
                 items: [
                     { key: 'flour', label: 'Мука', base: 300, step: 10, tbspGrams: 10, required: true },
-                    { key: 'water', label: 'Кипяток (75–85 °C)', base: 160, step: 5, tbspGrams: 15, isLiquid: true, required: true },
+                    { key: 'water', label: 'Горячая вода', base: 160, step: 5, tbspGrams: 15, isLiquid: true, required: true },
                     { key: 'salt', label: 'Соль', base: 5, step: 0.5, tbspGrams: 18, required: true },
-                    { key: 'oil', label: 'Масло (оливк./раст.)', base: 15, step: 1, tbspGrams: 13.74, required: false, defaultEnabled: true, isOil: true }
+                    { key: 'oil', label: 'Оливковое масло', base: 20, step: 5, tbspGrams: 14, isOil: true, required: false, defaultEnabled: true }
                 ],
-                hint: 'Заварное тесто на горячей воде — пластичное, раскатывается в 1 мм и не ломается при сворачивании.',
+                hint: 'Заварное пресное тесто на кипятке: не рвётся при раскатке и остаётся гибким для рулетов.',
                 blocks: [
                     {
                         type: 'steps',
                         title: '1. Последовательность замеса',
                         shortTitle: '1. Замес',
-                        subtitle: 'Отмечайте шаги по порядку',
+                        subtitle: 'Важно вливать горячую воду сразу',
                         steps: [
-                            'Растворить соль в горячей воде (75–85 °C) и влить туда же масло.',
-                            'Влить жидкость в муку, быстро перемешать ложкой (чтобы не обжечь руки), затем вымесить гладкое тугое тесто 5 минут.',
-                            'Завернуть тесто в плёнку или пакет, чтобы не заветрилось.'
+                            'Растворить соль в горячей воде (70–80 °C) и добавить масло.',
+                            'Влить горячую воду в муку, перемешать ложкой, а когда чуть остынет — вымесить 5–7 мин до гладкого плотного шара.',
+                            'Обязательно завернуть в пакет, чтобы тесто не заветрилось сверху.'
                         ]
                     },
                     {
                         type: 'singleTimer',
-                        title: '2. Отдых теста под плёнкой',
+                        title: '2. Отдых теста',
                         shortTitle: '2. Отдых теста',
-                        instruction: 'Клейковина расслабится за 20–30 мин — после этого шарики легко раскатываются в прозрачный лист.',
+                        instruction: 'Дать тесту полежать в пакете 25–30 мин — клейковина расслабится и лепёшки раскатаются в тонкий лист.',
                         timerTitle: 'Таймер отдыха',
-                        badge: 'Комнатная t°',
+                        badge: 'В пакете',
                         mins: 25,
                         presets: [
-                            { label: '15 мин', mins: 15 },
+                            { label: '20 мин', mins: 20 },
                             { label: '25 мин', mins: 25 },
                             { label: '40 мин', mins: 40 }
                         ]
@@ -261,12 +411,11 @@
                         type: 'skillet',
                         title: '3. Жарка на сухой сковороде',
                         shortTitle: '3. Жарка',
-                        heatBadge: 'Сухая сковорода • Сильный огонь',
+                        heatBadge: 'Сухая сковорода • Выше среднего',
                         points: [
-                            'Разделить тесто на кусочки по ~65 г, держать под плёнкой. Раскатать каждый в круг 1–1.5 мм, стряхнув лишнюю муку.',
-                            'Выложить на раскалённую сухую сковороду без масла: жарить 30–40 сек до появления пузырей и румяных подпалин.',
-                            'Перевернуть и дожарить ещё 20–30 сек.',
-                            'Сразу сбрызнуть горячий лаваш водой (рукой или из пульверизатора) и сложить стопкой под влажное полотенце, чтобы он стал мягким.'
+                            'Раскатать кусочек теста максимально тонко (~1–1.5 мм), лишнюю муку стряхнуть.',
+                            'Класть на хорошо разогретую сухую сковороду. Как только появятся белые пузыри и подпалины (20–30 сек) — сразу перевернуть и держать ещё 15–20 сек.',
+                            'Горячий лаваш сразу сбрызнуть водой и сложить стопкой под влажное полотенце.'
                         ]
                     }
                 ]
@@ -274,45 +423,55 @@
 
             buns: {
                 tabLabel: 'Булочки',
+                image: 'img/Breakfast.jpg',
+                cardTag: 'К завтраку • 220° / 200°',
                 widgetType: 'bunsSplit',
                 items: [
                     { key: 'flour', label: 'Мука', base: 350, step: 10, tbspGrams: 10, required: true },
-                    { key: 'water', label: 'Вода или молоко', base: 210, step: 5, tbspGrams: 15, isLiquid: true, required: true },
+                    { key: 'water', label: 'Вода / молоко', base: 215, step: 5, tbspGrams: 15, isLiquid: true, required: true },
                     { key: 'salt', label: 'Соль', base: 6, step: 0.5, tbspGrams: 18, required: true },
-                    { key: 'yeast', label: 'Дрожжи', bases: { dry: 3.5, fresh: 10 }, steps: { dry: 0.5, fresh: 1 }, tbspGramsByType: { dry: 9, fresh: 14 }, required: false, defaultEnabled: true },
-                    { key: 'sugar', label: 'Сахар или мёд', base: 12, step: 1, tbspGrams: 15, required: false, defaultEnabled: true },
-                    { key: 'oil', label: 'Масло (слив./оливк.)', base: 25, step: 5, tbspGrams: 14, required: false, defaultEnabled: true }
+                    {
+                        key: 'yeast',
+                        label: 'Дрожжи',
+                        bases: { dry: 3.5, fresh: 10 },
+                        steps: { dry: 0.5, fresh: 1 },
+                        tbspGramsByType: { dry: 9, fresh: 14 },
+                        required: false,
+                        defaultEnabled: true
+                    },
+                    { key: 'oil', label: 'Оливковое масло', base: 25, step: 5, tbspGrams: 14, isOil: true, required: false, defaultEnabled: true },
+                    { key: 'sugar', label: 'Сахар', base: 12, step: 2, tbspGrams: 15, required: false, defaultEnabled: true }
                 ],
-                hint: 'Классические мини-хлебцы к завтраку. Удобно поставить на ночь в холодильник и испечь утром.',
+                hint: 'Мягкие утренние мини-хлебцы с тонкой корочкой. Удобно поставить на ночь в холодильник и испечь утром.',
                 blocks: [
                     {
                         type: 'ferment2',
-                        title: '1. Брожение и расстойка',
-                        warmMins: 75,
-                        coldMins: 12 * 60,
-                        warmHint: 'Подъём 1–1.5 ч в тепле, затем разделить на шарики и дать подойти 25–30 мин.',
-                        coldHint: 'Убрать в холодильник на 8–14 ч с вечера. Утром сформовать булочки и дать согреться 35 мин.',
-                        stage1Title: '1.1 Основной подъём в миске',
+                        title: '1. Подъём и расстойка булочек',
                         stage1Short: '1.1 Подъём',
-                        stage2Title: '1.2 Расстойка шариков на противне',
                         stage2Short: '1.2 Расстойка',
-                        proofWarmHint: 'Округлить булочки и накрыть полотенцем',
-                        proofColdHint: 'Сформовать и согреть перед духовкой',
-                        proofMins: 25,
+                        warmHint: 'Подъём 1–1.5 часа в тепле, затем скатать круглые булочки и дать постоять 25–30 мин.',
+                        coldHint: 'Выбродить в холодильнике 8–12 ч, сформовать булочки и дать постоять 35–45 мин на столе.',
+                        stage1Title: '1.1 Основной подъём',
+                        warmMins: 75,
+                        coldMins: 10 * 60,
+                        stage2Title: '1.2 Расстойка булочек на противне',
+                        proofWarmHint: 'Смазать верх водой или молоком, по желанию посыпать семечками.',
+                        proofColdHint: 'Дайте заготовкам немного согреться при комнатной температуре.',
+                        proofMins: 30,
                         proofPresets: [
                             { label: '20 мин', mins: 20 },
-                            { label: '25 мин', mins: 25 },
-                            { label: '35 мин', mins: 35 }
+                            { label: '30 мин', mins: 30 },
+                            { label: '45 мин', mins: 45 }
                         ]
                     },
                     {
                         type: 'bake2',
-                        title: '2. Выпечка и температура',
-                        instruction: 'Смазать верх водой или молоком, сделать неглубокий надрез. Печь 10 мин с паром, затем 8–10 мин без пара.',
+                        title: '2. Выпечка булочек',
+                        instruction: '10 мин на 220 °C с паром для подъёма, затем убрать воду и допечь 8–10 мин на 200 °C до золотистого цвета.',
                         stage1: {
-                            title: '2.1 С паром (подъём корочки)',
                             short: '2.1 С паром',
-                            temp: '220 °C',
+                            title: '2.1 С паром (подъём)',
+                            temp: '220 °C • пар',
                             mins: 10,
                             presets: [
                                 { label: '8 мин', mins: 8 },
@@ -321,13 +480,13 @@
                             ]
                         },
                         stage2: {
-                            title: '2.2 Без пара до золотистого цвета',
-                            short: '2.2 Без пара',
-                            temp: '200 °C',
-                            mins: 9,
+                            short: '2.2 Допечь',
+                            title: '2.2 Без пара (румянец)',
+                            temp: '200 °C • сухо',
+                            mins: 10,
                             presets: [
-                                { label: '7 мин', mins: 7 },
-                                { label: '9 мин', mins: 9 },
+                                { label: '8 мин', mins: 8 },
+                                { label: '10 мин', mins: 10 },
                                 { label: '12 мин', mins: 12 }
                             ]
                         }
@@ -337,48 +496,58 @@
 
             flatbread: {
                 tabLabel: 'Лепёшка',
+                image: 'img/Flatbread.jpg',
+                cardTag: 'Духовка • 230 °C',
                 items: [
                     { key: 'flour', label: 'Мука', base: 300, step: 10, tbspGrams: 10, required: true },
-                    { key: 'water', label: 'Вода тёплая', base: 190, step: 5, tbspGrams: 15, isLiquid: true, required: true },
-                    { key: 'salt', label: 'Соль', base: 5, step: 0.5, tbspGrams: 18, required: true },
-                    { key: 'yeast', label: 'Дрожжи', bases: { dry: 3, fresh: 9 }, steps: { dry: 0.5, fresh: 1 }, tbspGramsByType: { dry: 9, fresh: 14 }, required: false, defaultEnabled: true },
-                    { key: 'sugar', label: 'Сахар', base: 6, step: 0.5, tbspGrams: 15, required: false, defaultEnabled: true },
-                    { key: 'oil', label: 'Оливковое масло', base: 20, step: 5, tbspGrams: 13.74, required: false, defaultEnabled: true, isOil: true }
+                    { key: 'water', label: 'Вода тёплая', base: 195, step: 5, tbspGrams: 15, isLiquid: true, required: true },
+                    { key: 'salt', label: 'Соль', base: 6, step: 0.5, tbspGrams: 18, required: true },
+                    {
+                        key: 'yeast',
+                        label: 'Дрожжи',
+                        bases: { dry: 3, fresh: 9 },
+                        steps: { dry: 0.5, fresh: 1 },
+                        tbspGramsByType: { dry: 9, fresh: 14 },
+                        required: false,
+                        defaultEnabled: true
+                    },
+                    { key: 'oil', label: 'Оливковое масло', base: 20, step: 5, tbspGrams: 14, isOil: true, required: false, defaultEnabled: true },
+                    { key: 'sugar', label: 'Сахар', base: 5, step: 1, tbspGrams: 15, required: false, defaultEnabled: false }
                 ],
-                hint: 'Пышная лепёшка с мягким мякишем: размять руками от центра к краям, середину часто наколоть вилкой.',
+                hint: 'Пышная домашняя лепёшка на противне с продавленной серединкой и кунжутом.',
                 blocks: [
                     {
                         type: 'ferment2',
-                        title: '1. Брожение и формовка',
-                        warmMins: 60,
-                        coldMins: 12 * 60,
-                        warmHint: 'Подъём 1 час в тепле, затем размять в лепёшку с бортиком и дать постоять 15–20 мин.',
-                        coldHint: 'Холодное брожение 8–18 ч в холодильнике, затем сформовать и согреть 25–30 мин.',
-                        stage1Title: '1.1 Подъём теста в миске',
+                        title: '1. Подъём и формовка лепёшки',
                         stage1Short: '1.1 Подъём',
-                        stage2Title: '1.2 Отдых сформованной лепёшки',
                         stage2Short: '1.2 Расстойка',
-                        proofWarmHint: 'Прижать центр, наколоть вилкой, смазать водой',
-                        proofColdHint: 'Дать тесту согреться после холодильника',
+                        warmHint: 'Подъём 1–1.5 часа, затем размять руками в круг толщиной 1.5–2 см, наколоть центр вилкой и дать постоять 20 мин.',
+                        coldHint: 'Выбродить в холодильнике 12–18 ч, сформовать лепёшку и дать подойти 35–40 мин.',
+                        stage1Title: '1.1 Подъём в миске',
+                        warmMins: 75,
+                        coldMins: 14 * 60,
+                        stage2Title: '1.2 Расстойка после формовки',
+                        proofWarmHint: 'Продавите центр стаканом или пальцами, чтобы лепёшка не вздулась пузырём.',
+                        proofColdHint: 'После холодильника дайте тесту согреться под полотенцем.',
                         proofMins: 20,
                         proofPresets: [
                             { label: '15 мин', mins: 15 },
                             { label: '20 мин', mins: 20 },
-                            { label: '30 мин', mins: 30 }
+                            { label: '35 мин', mins: 35 }
                         ]
                     },
                     {
                         type: 'singleTimer',
-                        title: '2. Выпечка в духовке',
+                        title: '2. Выпечка лепёшки',
                         shortTitle: '2. Выпечка',
-                        instruction: 'Печь на разогретом противне при 230 °C до яркой румяной корочки. Горячую лепёшку сразу смазать маслом или сбрызнуть водой.',
+                        instruction: 'Смазать верх водой или желтком, посыпать кунжутом. Выпекать 15–18 мин при 230 °C на одном режиме без манипуляций.',
                         timerTitle: 'Таймер выпечки',
                         badge: '230 °C',
-                        mins: 12,
+                        mins: 16,
                         presets: [
-                            { label: '10 мин • 230°', mins: 10, badge: '230 °C' },
-                            { label: '12 мин • 230°', mins: 12, badge: '230 °C' },
-                            { label: '15 мин • 220°', mins: 15, badge: '220 °C' }
+                            { label: '14 мин • 240°', mins: 14, badge: '240 °C' },
+                            { label: '16 мин • 230°', mins: 16, badge: '230 °C' },
+                            { label: '20 мин • 210°', mins: 20, badge: '210 °C' }
                         ]
                     }
                 ]
@@ -386,60 +555,70 @@
 
             ciabatta: {
                 tabLabel: 'Чиабатта',
+                image: 'img/Ciabatta.jpg',
+                cardTag: 'Влажное тесто • 245° / 210°',
                 items: [
-                    { key: 'flour', label: 'Мука (11–12% белка)', base: 300, step: 10, tbspGrams: 10, required: true },
-                    { key: 'water', label: 'Вода комнатная', base: 225, step: 5, tbspGrams: 15, isLiquid: true, required: true },
+                    { key: 'flour', label: 'Мука', base: 300, step: 10, tbspGrams: 10, required: true },
+                    { key: 'water', label: 'Вода', base: 230, step: 5, tbspGrams: 15, isLiquid: true, required: true },
                     { key: 'salt', label: 'Соль', base: 6, step: 0.5, tbspGrams: 18, required: true },
-                    { key: 'yeast', label: 'Дрожжи', bases: { dry: 2, fresh: 6 }, steps: { dry: 0.5, fresh: 1 }, tbspGramsByType: { dry: 9, fresh: 14 }, required: false, defaultEnabled: true },
-                    { key: 'oil', label: 'Оливковое масло', base: 15, step: 1, tbspGrams: 13.74, required: false, defaultEnabled: true, isOil: true }
+                    {
+                        key: 'yeast',
+                        label: 'Дрожжи',
+                        bases: { dry: 2, fresh: 6 },
+                        steps: { dry: 0.5, fresh: 1 },
+                        tbspGramsByType: { dry: 9, fresh: 14 },
+                        required: false,
+                        defaultEnabled: true
+                    },
+                    { key: 'oil', label: 'Оливковое масло', base: 15, step: 5, tbspGrams: 14, isOil: true, required: false, defaultEnabled: true }
                 ],
-                hint: 'Влажное тесто (75% воды) для крупных пор — не месить долго, а складывать мокрыми руками в миске.',
+                hint: 'Высокая влажность (~77%) даёт крупные дырки. Тесто липкое — не подсыпайте муку при замесе, работайте мокрыми руками.',
                 blocks: [
                     {
                         type: 'ferment2',
-                        title: '1. Брожение и расстойка',
-                        extraWidget: 'ciabattaFolds',
-                        warmMins: 120,
-                        coldMins: 18 * 60,
-                        warmHint: 'Брожение 2–2.5 ч со складываниями каждые 30 мин, затем аккуратно поделить скребком на 2 батона.',
-                        coldHint: 'Сделать 2–3 складывания в первый час и убрать в холодильник на 12–24 ч. Перевалить на припылённый стол.',
-                        stage1Title: '1.1 Основное брожение со складываниями',
+                        title: '1. Брожение со складываниями',
                         stage1Short: '1.1 Брожение',
-                        stage2Title: '1.2 Расстойка на пергаменте (не обминать)',
                         stage2Short: '1.2 Расстойка',
-                        proofWarmHint: 'Разделить скребком, присыпать мукой, накрыть',
-                        proofColdHint: 'Согреть заготовки на пергаменте перед посадкой',
-                        proofMins: 35,
+                        warmHint: 'Брожение 2–2.5 часа в тепле со складываниями конвертом каждые 30 мин, затем переложить на пергамент и дать постоять 30 мин.',
+                        coldHint: 'Сделать 3 складывания в первый час, убрать в холодильник на 12–24 ч, затем разделить скребком и дать постоять 45 мин.',
+                        stage1Title: '1.1 Основное брожение',
+                        warmMins: 135,
+                        coldMins: 16 * 60,
+                        extraWidget: 'ciabattaFolds',
+                        stage2Title: '1.2 Расстойка на пергаменте',
+                        proofWarmHint: 'Щедро припылите стол и верх теста мукой, разделите на 2 прямоугольника без обминки.',
+                        proofColdHint: 'Переложите заготовки на пергамент и прикройте полотенцем.',
+                        proofMins: 30,
                         proofPresets: [
                             { label: '25 мин', mins: 25 },
-                            { label: '35 мин', mins: 35 },
+                            { label: '30 мин', mins: 30 },
                             { label: '45 мин', mins: 45 }
                         ]
                     },
                     {
                         type: 'bake2',
-                        title: '2. Выпечка и температура',
-                        instruction: 'Перенести на пергаменте на горячий противень: 15 мин на 245 °C с кипятком внизу, затем убрать воду и допечь при 210 °C.',
+                        title: '2. Выпечка чиабатты',
+                        instruction: '12 мин на 245 °C с кипятком внизу духовки для раскрытия пор, затем убрать воду и допечь 14–16 мин на 210 °C до хрустящей корки.',
                         stage1: {
-                            title: '2.1 С паром (раскрытие пор)',
                             short: '2.1 С паром',
-                            temp: '245 °C',
+                            title: '2.1 С паром (раскрытие)',
+                            temp: '245 °C • пар',
+                            mins: 12,
+                            presets: [
+                                { label: '10 мин', mins: 10 },
+                                { label: '12 мин', mins: 12 },
+                                { label: '15 мин', mins: 15 }
+                            ]
+                        },
+                        stage2: {
+                            short: '2.2 Допечь',
+                            title: '2.2 Без пара (корка)',
+                            temp: '210 °C • сухо',
                             mins: 15,
                             presets: [
                                 { label: '12 мин', mins: 12 },
                                 { label: '15 мин', mins: 15 },
                                 { label: '18 мин', mins: 18 }
-                            ]
-                        },
-                        stage2: {
-                            title: '2.2 Без пара (хрустящая корка)',
-                            short: '2.2 Без пара',
-                            temp: '210 °C',
-                            mins: 13,
-                            presets: [
-                                { label: '10 мин', mins: 10 },
-                                { label: '13 мин', mins: 13 },
-                                { label: '16 мин', mins: 16 }
                             ]
                         }
                     }
@@ -448,48 +627,59 @@
 
             focaccia: {
                 tabLabel: 'Фокачча',
+                image: 'img/Focaccia.jpg',
+                cardTag: 'В форме • 225 °C',
                 widgetType: 'focacciaOil',
                 items: [
-                    { key: 'flour', label: 'Мука', base: 350, step: 10, tbspGrams: 10, required: true },
-                    { key: 'water', label: 'Вода тёплая', base: 260, step: 5, tbspGrams: 15, isLiquid: true, required: true },
-                    { key: 'salt', label: 'Соль', base: 7, step: 0.5, tbspGrams: 18, required: true },
-                    { key: 'yeast', label: 'Дрожжи', bases: { dry: 3, fresh: 9 }, steps: { dry: 0.5, fresh: 1 }, tbspGramsByType: { dry: 9, fresh: 14 }, required: false, defaultEnabled: true },
-                    { key: 'oil', label: 'Оливковое масло', base: 40, step: 5, tbspGrams: 13.74, required: false, defaultEnabled: true, isOil: true }
+                    { key: 'flour', label: 'Мука', base: 300, step: 10, tbspGrams: 10, required: true },
+                    { key: 'water', label: 'Вода', base: 225, step: 5, tbspGrams: 15, isLiquid: true, required: true },
+                    { key: 'salt', label: 'Соль', base: 6, step: 0.5, tbspGrams: 18, required: true },
+                    {
+                        key: 'yeast',
+                        label: 'Дрожжи',
+                        bases: { dry: 2.5, fresh: 7.5 },
+                        steps: { dry: 0.5, fresh: 1 },
+                        tbspGramsByType: { dry: 9, fresh: 14 },
+                        required: false,
+                        defaultEnabled: true
+                    },
+                    { key: 'oil', label: 'Оливковое масло', base: 40, step: 5, tbspGrams: 14, isOil: true, required: false, defaultEnabled: true },
+                    { key: 'sugar', label: 'Сахар', base: 5, step: 1, tbspGrams: 15, required: false, defaultEnabled: false }
                 ],
-                hint: 'Классическая без добавок: часть масла идёт в тесто, остальным щедро смазывается форма и поливается верх перед ямками.',
+                hint: 'Классическая фокачча без начинок: хрустящая маслянистая корочка, крупная соль и розмарин сверху.',
                 blocks: [
                     {
                         type: 'ferment2',
-                        title: '1. Брожение и расстойка в форме',
-                        warmMins: 90,
-                        coldMins: 24 * 60,
-                        warmHint: 'Подъём 1.5–2 ч в миске, затем выложить в смазанную форму, растянуть и сделать ямки пальцами.',
-                        coldHint: 'Выбродить в холодильнике 16–36 ч, переложить в смазанную форму, согреть до пузырей и продавить ямки.',
-                        stage1Title: '1.1 Основной подъём в миске',
+                        title: '1. Подъём и расстойка в форме',
                         stage1Short: '1.1 Подъём',
-                        stage2Title: '1.2 Расстойка в форме (перед ямками)',
                         stage2Short: '1.2 В форме',
-                        proofWarmHint: 'Растянуть по форме, полить маслом, сделать ямки',
-                        proofColdHint: 'Согреть в форме до пузырей и продавить ямки',
-                        proofMins: 35,
+                        warmHint: 'Подъём 1.5 часа в миске, затем переложить в смазанную маслом форму, растянуть и дать подойти 30 мин.',
+                        coldHint: 'Выбродить в холодильнике 16–24 ч, переложить в форму и дать согреться/подойти 45–60 мин.',
+                        stage1Title: '1.1 Основной подъём',
+                        warmMins: 90,
+                        coldMins: 18 * 60,
+                        stage2Title: '1.2 Расстойка в форме',
+                        proofWarmHint: 'Перед духовкой полейте маслом сверху и глубоко продавите ямки пальцами до дна.',
+                        proofColdHint: 'После того как тесто разойдётся по форме, сделайте ямки пальцами и посыпьте крупной солью.',
+                        proofMins: 30,
                         proofPresets: [
                             { label: '25 мин', mins: 25 },
-                            { label: '35 мин', mins: 35 },
-                            { label: '45 мин', mins: 45 }
+                            { label: '30 мин', mins: 30 },
+                            { label: '50 мин', mins: 50 }
                         ]
                     },
                     {
                         type: 'singleTimer',
-                        title: '2. Выпечка в духовке',
+                        title: '2. Выпечка фокаччи',
                         shortTitle: '2. Выпечка',
-                        instruction: 'Сбрызнуть верх водой (1–2 ст. л.) и посыпать крупной солью. Печь при 225 °C до яркой золотистой корки.',
+                        instruction: 'Сделать ямки пальцами, сбрызнуть водой и маслом, посыпать крупной солью. Выпекать 20–22 мин при 225 °C до румяного низа и верха.',
                         timerTitle: 'Таймер выпечки',
                         badge: '225 °C',
-                        mins: 18,
+                        mins: 20,
                         presets: [
-                            { label: '15 мин • 230°', mins: 15, badge: '230 °C' },
-                            { label: '18 мин • 225°', mins: 18, badge: '225 °C' },
-                            { label: '22 мин • 210°', mins: 22, badge: '210 °C' }
+                            { label: '18 мин • 230°', mins: 18, badge: '230 °C' },
+                            { label: '20 мин • 225°', mins: 20, badge: '225 °C' },
+                            { label: '24 мин • 210°', mins: 24, badge: '210 °C' }
                         ]
                     }
                 ]
@@ -497,38 +687,40 @@
 
             crepes: {
                 tabLabel: 'Блинчики',
+                image: 'img/blinchik.jpg',
+                cardTag: 'Сковорода • Без комочков',
                 widgetType: 'yieldEstimate',
                 pieceWeight: 60,
-                pieceName: 'тонких блинчиков (Ø 22 см)',
+                pieceName: 'тонких блинчиков',
                 items: [
                     { key: 'flour', label: 'Мука', base: 200, step: 10, tbspGrams: 10, required: true },
                     { key: 'water', label: 'Молоко', base: 500, step: 25, tbspGrams: 15, isLiquid: true, required: true },
                     { key: 'salt', label: 'Соль', base: 3, step: 0.5, tbspGrams: 18, required: true },
-                    { key: 'eggs', label: 'Яйца', base: 2, step: 0.5, unit: 'шт', weightPerUnit: 55, required: false, defaultEnabled: true },
-                    { key: 'sugar', label: 'Сахар', base: 20, step: 5, tbspGrams: 15, required: false, defaultEnabled: true },
-                    { key: 'oil', label: 'Масло в тесто', base: 25, step: 5, tbspGrams: 13.74, required: false, defaultEnabled: true, isOil: true }
+                    { key: 'eggs', label: 'Яйца', base: 2, step: 1, unit: 'шт', weightPerUnit: 55, required: false, defaultEnabled: true },
+                    { key: 'sugar', label: 'Сахар', base: 25, step: 5, tbspGrams: 15, required: false, defaultEnabled: true },
+                    { key: 'oil', label: 'Масло в тесто', base: 30, step: 5, tbspGrams: 14, isOil: true, required: false, defaultEnabled: true }
                 ],
-                hint: 'Чтобы не было комочков, муку вмешивают в густую основу с половиной молока, и только потом разводят остатком.',
+                hint: 'Чтобы не было комочков, сначала замешивается густое тесто на части молока, а потом разводится до нужной текучести.',
                 blocks: [
                     {
                         type: 'steps',
-                        title: '1. Последовательность замеса (без комочков)',
+                        title: '1. Порядок замеса без комочков',
                         shortTitle: '1. Замес',
-                        subtitle: 'Отмечайте шаги по порядку',
+                        subtitle: 'Пошагово венчиком',
                         steps: [
-                            'Взбить венчиком яйца с солью и сахаром до однородности.',
-                            'Влить половину молока и всыпать всю муку — размешать густое гладкое тесто без комочков.',
-                            'Влить оставшееся молоко и масло в тесто, перемешать до жидкой консистенции.'
+                            'Взбить венчиком яйца с сахаром, солью и примерно 150 мл молока.',
+                            'Всыпать всю муку и размешать до гладкой густой сметаны — на этом этапе комочки разбиваются легче всего.',
+                            'Влить оставшееся молоко и масло, перемешать до однородности.'
                         ]
                     },
                     {
                         type: 'singleTimer',
                         title: '2. Отдых теста',
                         shortTitle: '2. Отдых теста',
-                        instruction: 'За 20 мин клейковина разойдётся — блинчики станут эластичными и не будут рваться при переворачивании.',
+                        instruction: 'Дать тесту постоять 15–20 мин — мука набухнет, блинчики не будут рваться при переворачивании.',
                         timerTitle: 'Таймер отдыха',
                         badge: 'Комнатная t°',
-                        mins: 20,
+                        mins: 15,
                         presets: [
                             { label: '15 мин', mins: 15 },
                             { label: '20 мин', mins: 20 },
@@ -541,9 +733,9 @@
                         shortTitle: '3. Жарка',
                         heatBadge: 'Средне-сильный огонь',
                         points: [
-                            'Хорошо разогреть сковороду и смазать тонкой каплей масла только перед первым блином.',
-                            'Налить половником тонкий слой, распределяя по кругу. Жарить 45–60 сек, пока верх не станет матовым, а края слегка не подрумянятся.',
-                            'Поддеть лопаткой, перевернуть и дожарить 20–30 сек с обратной стороны.'
+                            'Хорошо разогреть сковороду и смазать каплей масла только перед первым блином (дальше работает масло в тесте).',
+                            'Налить половник теста, быстро распределить вращением. Как только края подсохнут и подрумянятся (~40–60 сек) — перевернуть.',
+                            'Вторую сторону жарить 20–30 сек до золотистых пятен.'
                         ]
                     }
                 ]
@@ -551,6 +743,8 @@
 
             pancakes: {
                 tabLabel: 'Панкейки',
+                image: 'img/Pancake.jpg',
+                cardTag: 'Сухая сковорода • Пышные',
                 widgetType: 'yieldEstimate',
                 pieceWeight: 55,
                 pieceName: 'пышных панкейков',
@@ -561,7 +755,7 @@
                     { key: 'eggs', label: 'Яйцо', base: 1, step: 0.5, unit: 'шт', weightPerUnit: 55, required: false, defaultEnabled: true },
                     { key: 'sugar', label: 'Сахар', base: 30, step: 5, tbspGrams: 15, required: false, defaultEnabled: true },
                     { key: 'leaven', label: 'Разрыхлитель', base: 8, step: 1, tbspGrams: 10, required: false, defaultEnabled: true },
-                    { key: 'oil', label: 'Масло в тесто', base: 30, step: 5, tbspGrams: 14, required: false, defaultEnabled: true }
+                    { key: 'oil', label: 'Масло в тесто', base: 30, step: 5, tbspGrams: 14, isOil: true, required: false, defaultEnabled: true }
                 ],
                 hint: 'Главный секрет пышности — соединить сухие и жидкие ингредиенты отдельно и не вымешивать до гладкости.',
                 blocks: [
@@ -605,59 +799,59 @@
 
             cookies: {
                 tabLabel: 'Печенье',
+                image: 'img/cookies.jpg',
+                cardTag: 'С шоколадом • 180 °C',
                 widgetType: 'yieldEstimate',
                 pieceWeight: 48,
-                pieceName: 'печений по ~48 г',
+                pieceName: 'крупных печений',
                 items: [
                     { key: 'flour', label: 'Мука', base: 220, step: 10, tbspGrams: 10, required: true },
                     { key: 'butter', label: 'Сливочное масло', base: 115, step: 5, tbspGrams: 14, required: true },
                     { key: 'salt', label: 'Соль', base: 3, step: 0.5, tbspGrams: 18, required: true },
-                    { key: 'sugar', label: 'Сахар (белый/тростн.)', base: 130, step: 10, tbspGrams: 15, required: false, defaultEnabled: true },
+                    { key: 'sugar', label: 'Сахар', base: 130, step: 10, tbspGrams: 15, required: false, defaultEnabled: true },
                     { key: 'eggs', label: 'Яйцо', base: 1, step: 0.5, unit: 'шт', weightPerUnit: 55, required: false, defaultEnabled: true },
-                    { key: 'leaven', label: 'Разрыхлитель', base: 4, step: 0.5, tbspGrams: 10, required: false, defaultEnabled: true },
-                    { key: 'choc', label: 'Шоколад кусочками', base: 120, step: 10, tbspGrams: 12, required: false, defaultEnabled: true }
+                    { key: 'leaven', label: 'Разрыхлитель', base: 4, step: 1, tbspGrams: 10, required: false, defaultEnabled: true },
+                    { key: 'choc', label: 'Шоколад / орехи', base: 120, step: 10, tbspGrams: 15, required: false, defaultEnabled: true }
                 ],
-                hint: 'Классическое американское печенье: хрустящее по краям и мягкое внутри, если не передержать в духовке.',
+                hint: 'Мягкая серединка и хрустящий край. Охлаждение теста не даёт печенью растечься в тонкий блин.',
                 blocks: [
                     {
                         type: 'steps',
                         title: '1. Последовательность замеса',
                         shortTitle: '1. Замес',
-                        subtitle: 'Отмечайте шаги по порядку',
+                        subtitle: 'Масло комнатной температуры',
                         steps: [
-                            'Мягкое сливочное масло комнатной температуры растереть с сахаром и солью (1–2 мин до кремовой массы).',
-                            'Добавить яйцо и перемешать до однородности.',
-                            'Всыпать муку с разрыхлителем, быстро объединить лопаткой без долгого вымешивания.',
-                            'Вмешать кусочки шоколада.'
+                            'Растереть мягкое сливочное масло с сахаром и солью до кремовой массы (не взбивать слишком долго).',
+                            'Добавить яйцо и вмешать до однородности.',
+                            'Всыпать муку с разрыхлителем и шоколадные капли/кусочки, быстро собрать тесто лопаткой.'
                         ]
                     },
                     {
                         type: 'singleTimer',
                         title: '2. Охлаждение в холодильнике',
-                        shortTitle: '2. Холодильник',
-                        instruction: 'Убрать миску с тестом в холодильник на 30–60 мин, чтобы масло схватилось и печенье не расплылось в тонкий блин. Затем скатать шарики по 45–50 г.',
+                        shortTitle: '2. Охлаждение',
+                        instruction: 'Убрать тесто (или уже скатанные шарики по ~45–50 г) в холодильник на 30 мин, чтобы масло застыло.',
                         timerTitle: 'Таймер охлаждения',
-                        badge: 'Холодильник (+4 °C)',
-                        mins: 40,
+                        badge: 'Холодильник',
+                        mins: 30,
                         presets: [
+                            { label: '20 мин', mins: 20 },
                             { label: '30 мин', mins: 30 },
-                            { label: '40 мин', mins: 40 },
-                            { label: '60 мин', mins: 60 },
-                            { label: '2 ч', mins: 120 }
+                            { label: '60 мин', mins: 60 }
                         ]
                     },
                     {
                         type: 'singleTimer',
-                        title: '3. Выпечка (1 этап)',
+                        title: '3. Выпечка печенья',
                         shortTitle: '3. Выпечка',
-                        instruction: 'Выложить шарики на пергамент с отступом 5–6 см. Доставать через 11–12 мин, когда края подрумянились, а центр ещё мягкий — дать остыть прямо на противне 10 мин.',
+                        instruction: 'Выложить шарики на пергамент с большим отступом (расползутся). Выпекать 11–13 мин при 180 °C — доставать, когда края румяные, а центр ещё мягкий.',
                         timerTitle: 'Таймер выпечки',
                         badge: '180 °C',
                         mins: 12,
                         presets: [
-                            { label: '10 мин • 180°', mins: 10, badge: '180 °C' },
-                            { label: '12 мин • 180°', mins: 12, badge: '180 °C' },
-                            { label: '14 мин • 175°', mins: 14, badge: '175 °C' }
+                            { label: '10 мин • мягче', mins: 10, badge: '180 °C' },
+                            { label: '12 мин • классика', mins: 12, badge: '180 °C' },
+                            { label: '14 мин • хруст', mins: 14, badge: '180 °C' }
                         ]
                     }
                 ]
@@ -686,10 +880,12 @@
         /* ==========================================================================
            СОСТОЯНИЕ ПРИЛОЖЕНИЯ
            ========================================================================== */
+        let currentView = 'home'; // 'home' | 'recipe'
         let currentRecipeKey = 'bread';
         let currentScale = 1;
         let yeastType = 'dry'; // 'dry' | 'fresh'
         let optionalEnabled = {};
+        const savedRecipeParams = {};
         const fermentModeByRecipe = {};
         const completedSteps = {};
         const activeStageByRecipe = {};
@@ -698,7 +894,7 @@
         let pizzaBallsCount = 2;
         let bunsSplitCount = 8;
 
-        // Хранилище всех таймеров по уникальному ID (не сбрасываются при пересчёте муки)
+        // Хранилище всех таймеров по уникальному ID (не сбрасываются при переходе назад)
         const timers = {};
         // Связь ID таймера с индексом этапа текущего рецепта
         let timerToStageIndex = {};
@@ -711,10 +907,143 @@
                     running: false,
                     endTimestamp: null,
                     showHours: Boolean(config.showHours),
-                    label: config.label
+                    label: config.label,
+                    recipeKey: currentRecipeKey
                 };
             }
             return timers[id];
+        }
+
+        function replayLogoAnimation() {
+            const container = document.getElementById('bbLogoContainer');
+            if (!container) return;
+            const clone = container.cloneNode(true);
+            container.parentNode.replaceChild(clone, container);
+        }
+
+        function getRunningTimersForRecipe(recipeKey) {
+            return Object.keys(timers)
+                .filter(id => id.startsWith(`${recipeKey}_`) && timers[id].running)
+                .map(id => ({ id, timer: timers[id] }));
+        }
+
+        function renderHomeActiveTimers() {
+            const box = document.getElementById('homeActiveTimers');
+            if (!box) return;
+
+            const runningList = Object.keys(timers)
+                .filter(id => timers[id].running)
+                .map(id => {
+                    const recipeKey = id.split('_')[0];
+                    return { id, recipeKey, timer: timers[id] };
+                });
+
+            if (runningList.length === 0) {
+                box.classList.add('hidden');
+                box.innerHTML = '';
+                return;
+            }
+
+            box.classList.remove('hidden');
+            box.innerHTML = runningList.map(({ id, recipeKey, timer }) => {
+                const recipe = RECIPES[recipeKey];
+                const recipeName = recipe ? recipe.tabLabel : recipeKey;
+                const timeText = formatTime(timer.remainingSec, timer.showHours);
+                return `
+                    <div onclick="openRecipe('${recipeKey}')" class="flex items-center justify-between gap-3 px-4 py-3 bg-stone-900 hover:bg-stone-800 text-white rounded-xl shadow-sm cursor-pointer transition">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
+                            <div class="truncate">
+                                <span class="text-xs font-bold text-emerald-300">${recipeName}</span>
+                                <span class="text-xs text-stone-300 ml-1.5">${timer.label.replace(/^[^:]+:\s*/, '')}</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <span id="home-timer-${id}" class="font-mono text-sm sm:text-base font-bold text-amber-400 tabular-nums">${timeText}</span>
+                            <span class="text-xs text-stone-400">→</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderRecipeCards() {
+            const grid = document.getElementById('recipeCardsGrid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            RECIPE_ORDER.forEach(key => {
+                const recipe = RECIPES[key];
+                const running = getRunningTimersForRecipe(key);
+                const hasRunning = running.length > 0;
+                const fallbackUrl = `https://placehold.co/600x450/292524/f5f5f4?text=${encodeURIComponent(recipe.tabLabel)}`;
+
+                const card = document.createElement('button');
+                card.type = 'button';
+                card.onclick = () => openRecipe(key);
+                card.className = hasRunning
+                    ? 'group text-left bg-white border-2 border-emerald-500 ring-4 ring-emerald-500/15 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition flex flex-col cursor-pointer'
+                    : 'group text-left bg-white border border-stone-300 hover:border-stone-500 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition flex flex-col cursor-pointer';
+
+                const runningBadgeHtml = hasRunning
+                    ? `<div class="absolute top-2.5 right-2.5 px-2 py-0.5 bg-stone-900/90 backdrop-blur-xs text-emerald-300 border border-emerald-500/50 rounded-md font-mono text-[11px] font-bold flex items-center gap-1.5 shadow">
+                           <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                           <span id="card-timer-${running[0].id}">${formatTime(running[0].timer.remainingSec, running[0].timer.showHours)}</span>
+                       </div>`
+                    : '';
+
+                card.innerHTML = `
+                    <div class="relative w-full aspect-[4/3] bg-stone-200 overflow-hidden">
+                        <img
+                            src="${recipe.image}"
+                            alt="${recipe.tabLabel}"
+                            loading="lazy"
+                            onerror="this.onerror=null;this.src='${fallbackUrl}';"
+                            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        >
+                        ${runningBadgeHtml}
+                    </div>
+                    <div class="p-3 sm:p-3.5 flex-1 flex flex-col justify-between">
+                        <div class="font-bold text-sm sm:text-base text-stone-900 group-hover:text-emerald-800 transition">${recipe.tabLabel}</div>
+                        <div class="text-[11px] sm:text-xs text-stone-500 mt-0.5">${recipe.cardTag}</div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function saveCurrentRecipeParams() {
+            if (!currentRecipeKey) return;
+            savedRecipeParams[currentRecipeKey] = {
+                scale: currentScale,
+                yeastType: yeastType,
+                optionalEnabled: { ...optionalEnabled }
+            };
+        }
+
+        function openRecipe(key) {
+            if (currentView === 'recipe') {
+                saveCurrentRecipeParams();
+            }
+
+            currentView = 'recipe';
+            switchRecipe(key);
+
+            document.getElementById('homeView').classList.add('hidden');
+            document.getElementById('recipeView').classList.remove('hidden');
+            document.getElementById('recipeViewTitle').textContent = RECIPES[key].tabLabel;
+            window.scrollTo({ top: 0, behavior: 'instant' });
+        }
+
+        function goBackHome() {
+            saveCurrentRecipeParams();
+            currentView = 'home';
+
+            document.getElementById('recipeView').classList.add('hidden');
+            document.getElementById('homeView').classList.remove('hidden');
+            renderRecipeCards();
+            renderHomeActiveTimers();
+            window.scrollTo({ top: 0, behavior: 'instant' });
         }
 
         /* ==========================================================================
@@ -782,26 +1111,8 @@
             return Math.round(total);
         }
 
-        function renderRecipeTabs() {
-            const container = document.getElementById('recipeTabs');
-            container.innerHTML = '';
-            RECIPE_ORDER.forEach(key => {
-                const recipe = RECIPES[key];
-                const isActive = key === currentRecipeKey;
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.onclick = () => switchRecipe(key);
-                btn.textContent = recipe.tabLabel;
-                btn.className = isActive
-                    ? 'py-2 px-2.5 rounded-lg text-xs sm:text-[13px] font-semibold transition cursor-pointer bg-white text-stone-900 shadow-sm text-center'
-                    : 'py-2 px-2.5 rounded-lg text-xs sm:text-[13px] font-medium transition cursor-pointer text-stone-600 hover:text-stone-900 hover:bg-stone-200/60 text-center';
-                container.appendChild(btn);
-            });
-        }
-
         function switchRecipe(key) {
             currentRecipeKey = key;
-            currentScale = 1;
             const recipe = RECIPES[key];
 
             if (!fermentModeByRecipe[key]) {
@@ -817,14 +1128,21 @@
                 completedStagesByRecipe[key] = {};
             }
 
-            optionalEnabled = {};
-            recipe.items.forEach(item => {
-                if (!item.required) {
-                    optionalEnabled[item.key] = Boolean(item.defaultEnabled);
-                }
-            });
+            if (savedRecipeParams[key]) {
+                currentScale = savedRecipeParams[key].scale;
+                yeastType = savedRecipeParams[key].yeastType;
+                optionalEnabled = { ...savedRecipeParams[key].optionalEnabled };
+            } else {
+                currentScale = 1;
+                yeastType = 'dry';
+                optionalEnabled = {};
+                recipe.items.forEach(item => {
+                    if (!item.required) {
+                        optionalEnabled[item.key] = Boolean(item.defaultEnabled);
+                    }
+                });
+            }
 
-            renderRecipeTabs();
             renderIngredients();
             document.getElementById('recipeHint').textContent = recipe.hint;
             renderWorkflow();
@@ -1024,7 +1342,7 @@
            ========================================================================== */
         function getRecipeStages(recipe) {
             const stages = [];
-            recipe.blocks.forEach((block, bIdx) => {
+            recipe.blocks.forEach(block => {
                 if (block.type === 'ferment2') {
                     stages.push({ short: block.stage1Short || '1.1 Подъём' });
                     stages.push({ short: block.stage2Short || '1.2 Расстойка' });
@@ -1638,6 +1956,10 @@
             playBeep();
             if (alarmInterval) clearInterval(alarmInterval);
             alarmInterval = setInterval(playBeep, 2500);
+            if (currentView === 'home') {
+                renderRecipeCards();
+                renderHomeActiveTimers();
+            }
         }
 
         function stopAlarm() {
@@ -1668,12 +1990,22 @@
                         }
                     }
                     renderTimer(id);
+
+                    // Обновляем живой отсчёт на главной странице, если открыт каталог блюд
+                    if (currentView === 'home') {
+                        const timeStr = formatTime(t.remainingSec, t.showHours);
+                        const homeBadge = document.getElementById(`home-timer-${id}`);
+                        if (homeBadge) homeBadge.textContent = timeStr;
+                        const cardBadge = document.getElementById(`card-timer-${id}`);
+                        if (cardBadge) cardBadge.textContent = timeStr;
+                    }
                 }
             });
         }, 250);
 
-        // Запуск при открытии
-        switchRecipe('bread');
+        // Запуск главной страницы при открытии
+        renderRecipeCards();
+        renderHomeActiveTimers();
     </script>
 </body>
 </html>
