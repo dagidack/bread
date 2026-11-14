@@ -896,6 +896,78 @@
         let pizzaBallsCount = 2;
         let bunsSplitCount = 8;
 
+        const STORAGE_KEY = 'breakingBreadState_v1';
+
+        function saveGlobalState() {
+            const state = {
+                currentView,
+                currentRecipeKey,
+                savedRecipeParams,
+                fermentModeByRecipe,
+                completedSteps,
+                activeStageByRecipe,
+                completedStagesByRecipe,
+                ciabattaFolds,
+                pizzaBallsCount,
+                bunsSplitCount,
+                timers: {}
+            };
+            for (const [id, t] of Object.entries(timers)) {
+                state.timers[id] = {
+                    defaultSec: t.defaultSec,
+                    remainingSec: t.running && t.endTimestamp ? Math.max(0, (t.endTimestamp - Date.now())/1000) : t.remainingSec,
+                    running: t.running,
+                    endTimestamp: t.endTimestamp,
+                    showHours: t.showHours,
+                    label: t.label,
+                    recipeKey: t.recipeKey
+                };
+            }
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        }
+
+        function loadGlobalState() {
+            try {
+                const data = localStorage.getItem(STORAGE_KEY);
+                if (!data) return false;
+                const parsed = JSON.parse(data);
+
+                if (parsed.currentView) currentView = parsed.currentView;
+                if (parsed.currentRecipeKey) currentRecipeKey = parsed.currentRecipeKey;
+
+                Object.assign(savedRecipeParams, parsed.savedRecipeParams || {});
+                Object.assign(fermentModeByRecipe, parsed.fermentModeByRecipe || {});
+                Object.assign(completedSteps, parsed.completedSteps || {});
+                Object.assign(activeStageByRecipe, parsed.activeStageByRecipe || {});
+                Object.assign(completedStagesByRecipe, parsed.completedStagesByRecipe || {});
+
+                if (parsed.ciabattaFolds) {
+                    ciabattaFolds[0] = !!parsed.ciabattaFolds[0];
+                    ciabattaFolds[1] = !!parsed.ciabattaFolds[1];
+                    ciabattaFolds[2] = !!parsed.ciabattaFolds[2];
+                }
+                if (parsed.pizzaBallsCount) pizzaBallsCount = parsed.pizzaBallsCount;
+                if (parsed.bunsSplitCount) bunsSplitCount = parsed.bunsSplitCount;
+
+                if (parsed.timers) {
+                    const now = Date.now();
+                    for (const [id, t] of Object.entries(parsed.timers)) {
+                        timers[id] = { ...t };
+                        // Корректируем остаток времени, если таймер был запущен
+                        if (t.running && t.endTimestamp) {
+                            const remain = (t.endTimestamp - now) / 1000;
+                            timers[id].remainingSec = remain <= 0 ? 0 : remain;
+                            // Если remain <= 0, таймер остаётся "running", чтобы setInterval сразу же вызвал будильник
+                        }
+                    }
+                }
+                return true;
+            } catch (e) {
+                console.error("Ошибка загрузки состояния", e);
+                return false;
+            }
+        }
+
         // Хранилище всех таймеров по уникальному ID (не сбрасываются при переходе назад)
         const timers = {};
         // Связь ID таймера с индексом этапа текущего рецепта
@@ -964,6 +1036,7 @@
         function setActiveStage(stageIdx) {
             activeStageByRecipe[currentRecipeKey] = stageIdx;
             renderWorkflow();
+            saveGlobalState();
         }
 
         function completeStage(stageIdx) {
@@ -975,12 +1048,14 @@
             completedStagesByRecipe[currentRecipeKey][stageIdx] = true;
             activeStageByRecipe[currentRecipeKey] = Math.min(totalStages, stageIdx + 1);
             renderWorkflow();
+            saveGlobalState();
         }
 
         function resetStagesProgress() {
             completedStagesByRecipe[currentRecipeKey] = {};
             activeStageByRecipe[currentRecipeKey] = 0;
             renderWorkflow();
+            saveGlobalState();
         }
 
         function handleStageCardClick(event, stageIdx) {
@@ -1191,7 +1266,7 @@
                                <div class="grid grid-cols-3 gap-2">
                                    ${[0, 1, 2].map(idx => `
                                        <label class="flex items-center justify-center gap-1.5 py-1.5 px-2 bg-white border border-stone-200 rounded-lg text-xs font-medium cursor-pointer select-none">
-                                           <input type="checkbox" ${ciabattaFolds[idx] ? 'checked' : ''} onchange="ciabattaFolds[${idx}] = this.checked" class="w-3.5 h-3.5 rounded accent-stone-900 cursor-pointer">
+                                           <input type="checkbox" ${ciabattaFolds[idx] ? 'checked' : ''} onchange="ciabattaFolds[${idx}] = this.checked; saveGlobalState();" class="w-3.5 h-3.5 rounded accent-stone-900 cursor-pointer">
                                            <span>Склад. ${idx + 1}</span>
                                        </label>
                                    `).join('')}
@@ -1377,6 +1452,7 @@
             }
             completedSteps[currentRecipeKey][stepIdx] = checked;
             renderWorkflow();
+            saveGlobalState();
         }
 
         function setFermentMode(mode) {
@@ -1391,6 +1467,7 @@
                 timers[t1Id].remainingSec = defaultMins * 60;
             }
             renderWorkflow();
+            saveGlobalState();
         }
 
         function onFermentCustomChange(timerId, val) {
@@ -1479,6 +1556,7 @@
                 customInput.value = isColdMain ? Math.round((m / 60) * 10) / 10 : m;
             }
             renderTimer(id);
+            saveGlobalState();
         }
 
         function toggleTimer(id) {
@@ -1502,10 +1580,12 @@
                 if (linkedStage !== undefined && activeStageByRecipe[currentRecipeKey] !== linkedStage) {
                     activeStageByRecipe[currentRecipeKey] = linkedStage;
                     renderWorkflow();
+                    saveGlobalState();
                     return;
                 }
             }
             renderTimer(id);
+            saveGlobalState();
         }
 
         function resetTimer(id) {
@@ -1516,6 +1596,7 @@
             t.endTimestamp = null;
             t.remainingSec = t.defaultSec;
             renderTimer(id);
+            saveGlobalState();
         }
 
         /* ==========================================================================
@@ -1586,6 +1667,7 @@
                         t.running = false;
                         t.endTimestamp = null;
                         triggerAlarm(t.label);
+                        saveGlobalState();
 
                         // По окончании таймера автоматически переводим зелёную рамку на следующий этап
                         const linkedStage = timerToStageIndex[id];
@@ -1617,6 +1699,7 @@
                 yeastType: yeastType,
                 optionalEnabled: { ...optionalEnabled }
             };
+            saveGlobalState();
         }
 
         function loadRecipeState(recipeKey) {
@@ -1654,6 +1737,7 @@
             renderIngredients();
             renderWorkflow();
             window.scrollTo({ top: 0, behavior: 'smooth' });
+            saveGlobalState();
         }
 
         function goBackHome() {
@@ -1667,6 +1751,7 @@
 
             renderRecipeCards();
             renderHomeActiveTimers();
+            saveGlobalState();
         }
 
         function renderHomeActiveTimers() {
@@ -1969,16 +2054,34 @@
         function setPizzaBallsCount(n) {
             pizzaBallsCount = n;
             updateTotalWeightAndWidget();
+            saveGlobalState();
         }
 
         function setBunsSplitCount(n) {
             bunsSplitCount = n;
             updateTotalWeightAndWidget();
+            saveGlobalState();
         }
 
-        // Запуск главной страницы при открытии
-        renderRecipeCards();
-        renderHomeActiveTimers();
+        // Запуск приложения и загрузка состояния
+        if (loadGlobalState()) {
+            if (currentView === 'recipe') {
+                document.getElementById('homeView').classList.add('hidden');
+                document.getElementById('recipeView').classList.remove('hidden');
+                document.getElementById('recipeViewTitle').textContent = RECIPES[currentRecipeKey].tabLabel;
+                
+                loadRecipeState(currentRecipeKey);
+                renderIngredients();
+                renderWorkflow();
+            } else {
+                renderRecipeCards();
+                renderHomeActiveTimers();
+            }
+        } else {
+            // Первый запуск
+            renderRecipeCards();
+            renderHomeActiveTimers();
+        }
 
         /* ==========================================================================
            ПОСТОЯННАЯ МОНОХРОМНАЯ WEB3-АНИМАЦИЯ НА ПРОЗРАЧНОМ ФОНЕ ШАПКИ
